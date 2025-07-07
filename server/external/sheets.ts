@@ -20,11 +20,7 @@ export class BadMovieGSheet {
         await this.googleDoc.loadInfo()
     }
 
-    async getMovies(): Promise<GetMoviesResponse> {
-        await this.googleDoc.sheetsByIndex[0].loadHeaderRow(5)
-        let rows = await this.googleDoc.sheetsByIndex[0].getRows({
-            offset: 5,
-        })
+    private async parseMoviesFromRows(rows: any[]): Promise<BadMovie[]> {
         rows = rows.filter((row) => row.get('Title') && row.get('Link'))
         const parsedMoviesPromises = rows.map(async (row) => {
             return {
@@ -35,12 +31,47 @@ export class BadMovieGSheet {
                 posterURL: (await this.getTMDbPosterURL(row.get('Link') || '')) || null,
             } as BadMovie
         })
+        return Promise.all(parsedMoviesPromises)
+    }
 
-        const parsedMovies = await Promise.all(parsedMoviesPromises)
+    private sortMoviesBySuggestedBy(movies: BadMovie[]): Map<string, BadMovie[]> {
+        const moviesByPerson = new Map<string, BadMovie[]>()
+        for (const movie of movies) {
+            if (!movie.suggestedBy) continue
+            if (!moviesByPerson.has(movie.suggestedBy)) {
+                moviesByPerson.set(movie.suggestedBy, [])
+            }
+            moviesByPerson.get(movie.suggestedBy)!.push(movie)
+        }
+
+        return moviesByPerson
+    }
+
+    private getMoviePerPerson(moviesByPerson: Map<string, BadMovie[]>): BadMovie[] {
+        const randomPicks: BadMovie[] = []
+        for (const person of moviesByPerson.keys()) {
+            const movies = moviesByPerson.get(person)!.filter((movie) => !movie.watched)
+            if (movies && movies.length > 0) {
+                const randomMovie = movies[Math.floor(Math.random() * movies.length)]
+                randomPicks.push(randomMovie)
+            }
+        }
+        return randomPicks
+    }
+
+    async getMovies(): Promise<GetMoviesResponse> {
+        await this.googleDoc.sheetsByIndex[0].loadHeaderRow(5)
+        const rows = await this.googleDoc.sheetsByIndex[0].getRows({
+            offset: 5,
+        })
+        const parsedMovies = await this.parseMoviesFromRows(rows)
+        const moviesByPerson = this.sortMoviesBySuggestedBy(parsedMovies)
+        const randomPicks = this.getMoviePerPerson(moviesByPerson)
 
         return {
-            unwatchedMovies: parsedMovies.filter((movie) => !movie.watched),
+            randomPicks: randomPicks,
             watchedMovies: parsedMovies.filter((movie) => movie.watched),
+            sortedMoviesByPerson: moviesByPerson,
         } as GetMoviesResponse
     }
 

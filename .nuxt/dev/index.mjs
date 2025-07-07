@@ -2100,11 +2100,7 @@ class BadMovieGSheet {
   async loadSheetsInfo() {
     await this.googleDoc.loadInfo();
   }
-  async getMovies() {
-    await this.googleDoc.sheetsByIndex[0].loadHeaderRow(5);
-    let rows = await this.googleDoc.sheetsByIndex[0].getRows({
-      offset: 5
-    });
+  async parseMoviesFromRows(rows) {
     rows = rows.filter((row) => row.get("Title") && row.get("Link"));
     const parsedMoviesPromises = rows.map(async (row) => {
       return {
@@ -2115,10 +2111,42 @@ class BadMovieGSheet {
         posterURL: await this.getTMDbPosterURL(row.get("Link") || "") || null
       };
     });
-    const parsedMovies = await Promise.all(parsedMoviesPromises);
+    return Promise.all(parsedMoviesPromises);
+  }
+  sortMoviesBySuggestedBy(movies) {
+    const moviesByPerson = /* @__PURE__ */ new Map();
+    for (const movie of movies) {
+      if (!movie.suggestedBy) continue;
+      if (!moviesByPerson.has(movie.suggestedBy)) {
+        moviesByPerson.set(movie.suggestedBy, []);
+      }
+      moviesByPerson.get(movie.suggestedBy).push(movie);
+    }
+    return moviesByPerson;
+  }
+  getMoviePerPerson(moviesByPerson) {
+    const randomPicks = [];
+    for (const person of moviesByPerson.keys()) {
+      const movies = moviesByPerson.get(person).filter((movie) => !movie.watched);
+      if (movies && movies.length > 0) {
+        const randomMovie = movies[Math.floor(Math.random() * movies.length)];
+        randomPicks.push(randomMovie);
+      }
+    }
+    return randomPicks;
+  }
+  async getMovies() {
+    await this.googleDoc.sheetsByIndex[0].loadHeaderRow(5);
+    const rows = await this.googleDoc.sheetsByIndex[0].getRows({
+      offset: 5
+    });
+    const parsedMovies = await this.parseMoviesFromRows(rows);
+    const moviesByPerson = this.sortMoviesBySuggestedBy(parsedMovies);
+    const randomPicks = this.getMoviePerPerson(moviesByPerson);
     return {
-      unwatchedMovies: parsedMovies.filter((movie) => !movie.watched),
-      watchedMovies: parsedMovies.filter((movie) => movie.watched)
+      randomPicks,
+      watchedMovies: parsedMovies.filter((movie) => movie.watched),
+      sortedMoviesByPerson: moviesByPerson
     };
   }
   async getTMDbPosterURL(tmdbURL) {
