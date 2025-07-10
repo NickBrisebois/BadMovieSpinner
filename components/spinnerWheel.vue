@@ -1,26 +1,65 @@
 <template>
     <div class="moviesContainer">
         <div class="wheelContainer">
-            <div class="spinBtn">spin</div>
-            <div class="wheel">
-                <div
-                    v-for="(movie, i) in randomPicks"
-                    :key="movie.title"
-                    class="movieItem"
-                    :style="{
-                        '--i': i,
-                        '--angle': 360 / randomPicks.length,
-                        '--clr': colors[i % colors.length],
-                        backgroundImage: movie.posterURL
-                            ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${movie.posterURL}')`
-                            : undefined,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }"
-                >
-                    <span
-                        ><a target="_blank" :href="movie.link">{{ movie.title }}</a></span
+            <div id="main">
+                <div class="spinner" id="spinContainer" ref="spinContainer">
+                    <div class="spinner-lever">
+                        <button class="spinner-lever-button" id="spin" type="button" @click="spin">
+                            Pull the lever to spin the wheel
+                        </button>
+                    </div>
+                    <svg
+                        ref="spinWheel"
+                        class="spinner-svg"
+                        :width="size"
+                        :height="size"
+                        :viewBox="`0 0 ${size} ${size}`"
+                        :style="{
+                            transition: `transform ${spinTime}ms cubic-bezier(0.33,1,0.68,1)`,
+                        }"
                     >
+                        <g v-for="(movie, i) in randomPicks" :key="movie.title">
+                            <path
+                                :d="
+                                    describeArc(
+                                        size / 2,
+                                        size / 2,
+                                        size / 2 - 4,
+                                        i * angle,
+                                        (i + 1) * angle,
+                                    )
+                                "
+                                :fill="colors[i % colors.length]"
+                                stroke="#232526"
+                                stroke-width="2"
+                            />
+                            <foreignObject
+                                :x="getTextX(i) - 40"
+                                :y="getTextY(i) - 20"
+                                width="80"
+                                height="40"
+                                :transform="`rotate(${i * angle + angle.value / 2} ${getTextX(i)} ${getTextY(i)})`"
+                            >
+                                <div
+                                    xmlns="http://www.w3.org/1999/xhtml"
+                                    style="
+                                        color: #fff;
+                                        font-size: 12px;
+                                        text-align: center;
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                        width: 80px;
+                                        height: 40px;
+                                        line-height: 1.1;
+                                        word-break: break-word;
+                                        /* REMOVE white-space: nowrap; */
+                                    "
+                                >
+                                    {{ movie.title }}
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </svg>
                 </div>
             </div>
         </div>
@@ -29,37 +68,93 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import type { BadMovie } from '~/shared/types/movie'
 
-const wheel = ref<HTMLElement | null>(null)
-const spinButton = ref<HTMLElement | null>(null)
+const spinContainer = ref<HTMLElement | null>(null)
+const spinWheel = ref<SVGSVGElement | null>(null)
+const currDeg = ref(0)
 
 const randomPicks = ref<BadMovie[]>([])
-const watchedBadMovies = ref<BadMovie[]>([])
-const sortedMoviesByPerson = ref<Record<string, BadMovie[]>>({})
-const colors = ['#1a1a1a', '#2c3e50']
+const colors = [
+    '#a94fca',
+    '#ee4266',
+    '#ffd23f',
+    '#3bceac',
+    '#2765d4',
+    '#ff715b',
+    '#a94fca',
+    '#ee4266',
+    '#ffd23f',
+    '#3bceac',
+    '#2765d4',
+    '#ff715b',
+]
+
+const size = 400
+const spinTime = 3000
+
+const angle = computed(() => (randomPicks.value.length ? 360 / randomPicks.value.length : 360))
+
+function polarToCartesian(cx: number, cy: number, r: number, angleInDegrees: number) {
+    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
+    return {
+        x: cx + r * Math.cos(angleInRadians),
+        y: cy + r * Math.sin(angleInRadians),
+    }
+}
+
+function describeArc(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
+    const start = polarToCartesian(cx, cy, r, endAngle)
+    const end = polarToCartesian(cx, cy, r, startAngle)
+    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
+    return [
+        'M',
+        cx,
+        cy,
+        'L',
+        start.x,
+        start.y,
+        'A',
+        r,
+        r,
+        0,
+        largeArcFlag,
+        0,
+        end.x,
+        end.y,
+        'Z',
+    ].join(' ')
+}
+
+function getTextX(i: number) {
+    const a = (i + 0.5) * angle.value - 90
+    return size / 2 + (size / 3.2) * Math.cos((a * Math.PI) / 180)
+}
+function getTextY(i: number) {
+    const a = (i + 0.5) * angle.value - 90
+    return size / 2 + (size / 3.2) * Math.sin((a * Math.PI) / 180)
+}
+
+function spin() {
+    if (!spinContainer.value || !spinWheel.value) return
+    const startingDeg = currDeg.value
+    const randDeg = startingDeg + Math.round(Math.random() * (3000 - 360) + 360)
+    spinContainer.value.classList.add('is-spinning')
+    spinWheel.value.style.transform = `rotate(${randDeg}deg)`
+    currDeg.value = randDeg
+    setTimeout(() => {
+        spinContainer.value?.classList.remove('is-spinning')
+    }, spinTime)
+}
 
 onMounted(async () => {
     const badMoviesResponse = await useFetch('/api/sheets', {
         method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
     })
-
-    randomPicks.value = badMoviesResponse.data.value?.randomPicks || []
-    console.log('Bad Movies:', randomPicks)
-
-    wheel.value = document.querySelector('.wheel')
-    spinButton.value = document.querySelector('.spinBtn')
-
-    if (wheel.value && spinButton.value) {
-        spinButton.value.addEventListener('click', () => {
-            const randomDegree = Math.floor(Math.random() * 360 + 720)
-            wheel.value!.style.transform = `rotate(${randomDegree}deg)`
-        })
-    }
+    const movies = badMoviesResponse.data.value?.randomPicks || []
+    randomPicks.value = movies
 })
 </script>
 
@@ -93,92 +188,120 @@ onMounted(async () => {
     }
 
     .wheelContainer {
-        display: flex;
-        position: relative;
-        border: 1px solid red;
-        width: 80vw;
-        height: 80vw;
-        max-width: 40em;
-        max-height: 40em;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        .spinBtn {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: #fff;
-            border-radius: 50%;
-            z-index: 10;
+        #main {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            text-transform: uppercase;
-            font-weight: 100;
-            color: #333;
-            letter-spacing: 0.1em;
-            border: 4px solid rgba(0, 0, 0, 0.75);
-            cursor: pointer;
-            user-select: none;
         }
-
-        .spinBtn::before {
-            content: '';
-            position: absolute;
-            top: -28px;
-            width: 20px;
-            height: 30px;
-            background: #fff;
-            clip-path: polygon(50% 0%, 15% 100%, 85% 100%);
+        .spinner {
+            --spin-time: 3000;
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 2rem auto;
+            .spinner-svg {
+                display: block;
+                margin: 0 auto;
+                width: 100%;
+                height: auto;
+                max-width: 400px;
+                max-height: 400px;
+                border-radius: 50%;
+                background: #232526;
+                box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+            }
         }
-
-        .wheel {
+        .spinner-lever {
             position: absolute;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #333;
-            border-radius: 50%;
-            overflow: hidden;
-            box-shadow:
-                0 0 0 5px #333,
-                0 0 0 15px #fff,
-                0 0 0 18px #111;
-            transition: transform 5s ease-in-out;
-
-            .movieItem {
+            bottom: 0;
+            margin: auto;
+            left: calc(100% + 0.4vw);
+            border: 0.1vw solid grey;
+            background-color: lightgrey;
+            width: 4vw;
+            height: 8.5vw;
+            &:before,
+            &:after {
+                content: '';
+                display: block;
                 position: absolute;
-                width: 50%;
-                height: 50%;
-                background: var(--clr);
-                transform-origin: bottom right;
-                // Use the dynamic angle:
-                transform: rotate(calc(var(--angle) * var(--i) * 1deg));
-                // Optionally, adjust the clip-path for better segment shape if needed
-                clip-path: polygon(0 0, 56% 0, 100% 100%, 0 56%);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                user-select: none;
+                left: 0;
+                right: 0;
+                margin: auto;
+            }
+            &:before {
+                top: 0;
+                bottom: 0;
+                background-color: grey;
+                height: 80%;
+                width: 1.2vw;
+            }
+            &:after {
+                top: 0;
+                bottom: 0;
+                margin: auto;
+                height: 35%;
+                width: 0.8vw;
+                background-color: lightgrey;
+                transform: translateZ(0) translateY(-25%);
+                backface-visibility: hidden;
+                .is-spinning & {
+                    animation: movePole 3000ms ease-in-out;
+                }
+                @at-root {
+                    @keyframes movePole {
+                        0%,
+                        100% {
+                            transform: translateZ(0) translateY(-25%);
+                            height: 35%;
+                        }
+                        5%,
+                        50% {
+                            height: 10%;
+                        }
+                        10% {
+                            transform: translateZ(0) translateY(50%);
+                            height: 35%;
+                        }
+                        15% {
+                            height: 35%;
+                        }
+                    }
+                }
+            }
+            &-button {
+                text-indent: -9999px;
+                position: absolute;
+                border: 0;
+                background: transparent;
+                padding: 0;
+                width: 1.8vw;
+                height: 1.8vw;
+                background-color: red;
+                border-radius: 100%;
                 cursor: pointer;
-
-                a {
-                    color: #fff;
-                    text-decoration: none;
+                top: calc(25% - #{1.8 / 2 * 1vw});
+                left: 0;
+                right: 0;
+                margin: auto;
+                z-index: 1;
+                .is-spinning & {
+                    animation: moveLever 3000ms ease-in-out;
                 }
-                a:hover {
-                    text-decoration: underline;
-                }
-
-                span {
-                    position: relative;
-                    transform: rotate(calc(var(--angle) * 1deg));
-                    font-size: 0.75em;
-                    font-weight: 700;
-                    color: #fff;
-                    text-shadow: 3px 5px 2px rgba(0, 0, 0, 0.15);
+                @at-root {
+                    @keyframes moveLever {
+                        0%,
+                        100% {
+                            transform: translateY(0%);
+                        }
+                        10% {
+                            transform: translateY(240%);
+                        }
+                    }
                 }
             }
         }
@@ -190,7 +313,6 @@ onMounted(async () => {
         flex-direction: column;
         align-items: center;
         gap: 1em;
-
         .wheelContainer {
             width: 100vw;
             height: 100vw;
