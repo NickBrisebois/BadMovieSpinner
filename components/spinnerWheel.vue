@@ -43,21 +43,21 @@
                                         size / 2,
                                         size / 2,
                                         size / 2 - 4,
-                                        getMovieAngles(i).startAngle,
-                                        getMovieAngles(i).endAngle,
+                                        getMovieAngles(i, anglePerMovie).startAngle,
+                                        getMovieAngles(i, anglePerMovie).endAngle,
                                     )
                                 "
                                 :fill="
                                     entry.movie.posterURL
                                         ? `url(#poster-pattern-${i})`
-                                        : colors[i % colors.length]
+                                        : colours[i % colours.length]
                                 "
                                 stroke="#232526"
                                 stroke-width="2"
                             />
                             <foreignObject
-                                :x="getTextX(getMovieAngles(i)) - 40"
-                                :y="getTextY(getMovieAngles(i)) - 20"
+                                :x="getTextX(getMovieAngles(i, anglePerMovie), size) - 40"
+                                :y="getTextY(getMovieAngles(i, anglePerMovie), size) - 20"
                                 width="80"
                                 height="40"
                             >
@@ -95,6 +95,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import type { BadMovie } from '~/shared/types/movie'
+import { getMovieAngles, describeArc, getTextX, getTextY } from '~/utils/spinnerMath'
 
 const spinContainer = ref<HTMLElement | null>(null)
 const spinWheel = ref<SVGSVGElement | null>(null)
@@ -132,71 +133,13 @@ const allMovies = computed(() => {
     return arr
 })
 
-const colors = [
-    '#a94fca',
-    '#ee4266',
-    '#ffd23f',
-    '#3bceac',
-    '#2765d4',
-    '#ff715b',
-    '#a94fca',
-    '#ee4266',
-    '#ffd23f',
-    '#3bceac',
-    '#2765d4',
-    '#ff715b',
-]
+// TODO: Get rid of colours since we just use posters now
+const colours = ['#a94fca']
 
 const size = 400
 const spinTime = 3000
 
 const anglePerMovie = computed(() => (totalMovies.value > 0 ? 360 / totalMovies.value : 360))
-
-function getMovieAngles(globalIndex: number) {
-    const startAngle = globalIndex * anglePerMovie.value
-    const endAngle = (globalIndex + 1) * anglePerMovie.value
-    return { startAngle, endAngle }
-}
-
-function polarToCartesian(cx: number, cy: number, r: number, angleInDegrees: number) {
-    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
-    return {
-        x: cx + r * Math.cos(angleInRadians),
-        y: cy + r * Math.sin(angleInRadians),
-    }
-}
-
-function describeArc(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
-    const start = polarToCartesian(cx, cy, r, endAngle)
-    const end = polarToCartesian(cx, cy, r, startAngle)
-    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
-    return [
-        'M',
-        cx,
-        cy,
-        'L',
-        start.x,
-        start.y,
-        'A',
-        r,
-        r,
-        0,
-        largeArcFlag,
-        0,
-        end.x,
-        end.y,
-        'Z',
-    ].join(' ')
-}
-
-function getTextX({ startAngle, endAngle }: { startAngle: number; endAngle: number }) {
-    const a = (startAngle + endAngle) / 2 - 90
-    return size / 2 + (size / 3.2) * Math.cos((a * Math.PI) / 180)
-}
-function getTextY({ startAngle, endAngle }: { startAngle: number; endAngle: number }) {
-    const a = (startAngle + endAngle) / 2 - 90
-    return size / 2 + (size / 3.2) * Math.sin((a * Math.PI) / 180)
-}
 
 function spin() {
     if (!spinContainer.value || !spinWheel.value) return
