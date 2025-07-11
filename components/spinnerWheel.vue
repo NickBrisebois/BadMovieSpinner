@@ -3,6 +3,27 @@
         <div class="wheelContainer">
             <div id="main">
                 <div class="spinner" id="spinContainer" ref="spinContainer">
+                    <svg
+                        class="winning-indicator"
+                        :width="40"
+                        :height="30"
+                        style="
+                            position: absolute;
+                            left: 50%;
+                            top: -18px;
+                            transform: translateX(-50%) rotate(180deg);
+                            z-index: 2;
+                        "
+                        viewBox="0 0 40 30"
+                    >
+                        <polygon
+                            points="20,0 0,30 40,30"
+                            fill="#fff"
+                            stroke="#232526"
+                            stroke-width="2"
+                            opacity="0.85"
+                        />
+                    </svg>
                     <div class="spinner-lever">
                         <button class="spinner-lever-button" id="spin" type="button" @click="spin">
                             Pull the lever to spin the wheel
@@ -84,6 +105,23 @@
                                 </div>
                             </foreignObject>
                         </g>
+                        <g v-if="selectedIndex !== null">
+                            <path
+                                :d="
+                                    describeArc(
+                                        size / 2,
+                                        size / 2,
+                                        size / 2 - 4,
+                                        getMovieAngles(selectedIndex, anglePerMovie).startAngle,
+                                        getMovieAngles(selectedIndex, anglePerMovie).endAngle,
+                                    )
+                                "
+                                fill="none"
+                                stroke="red"
+                                stroke-width="6"
+                                style="pointer-events: none"
+                            />
+                        </g>
                     </svg>
                 </div>
             </div>
@@ -97,6 +135,7 @@ import { ref, computed } from 'vue'
 import type { BadMovie } from '~/shared/types/movie'
 import { getMovieAngles, describeArc, getTextX, getTextY } from '~/utils/spinnerMath'
 
+const selectedIndex = ref<number | null>(null)
 const spinContainer = ref<HTMLElement | null>(null)
 const spinWheel = ref<SVGSVGElement | null>(null)
 const currDeg = ref(0)
@@ -150,6 +189,10 @@ function spin() {
     currDeg.value = randDeg
     setTimeout(() => {
         spinContainer.value?.classList.remove('is-spinning')
+
+        const normalizedDeg = randDeg % 360
+        const winningIndex = Math.floor(((360 - normalizedDeg) % 360) / anglePerMovie.value)
+        selectedIndex.value = winningIndex
     }, spinTime)
 }
 </script>
@@ -248,6 +291,10 @@ function spin() {
                 background: #232526;
                 box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
             }
+        }
+        .highlighted-slice {
+            stroke: red;
+            stroke-width: 3;
         }
         .spinner-lever {
             position: absolute;
