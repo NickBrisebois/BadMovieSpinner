@@ -20,35 +20,35 @@
                     >
                         <defs>
                             <pattern
-                                v-for="(movie, i) in randomPicks"
+                                v-for="(entry, i) in allMovies"
                                 :id="`poster-pattern-${i}`"
                                 patternUnits="objectBoundingBox"
                                 :width="1"
                                 :height="1"
-                                :key="movie.title"
+                                :key="entry.movie.title"
                             >
                                 <image
-                                    v-if="movie.posterURL"
-                                    :href="movie.posterURL"
+                                    v-if="entry.movie.posterURL"
+                                    :href="entry.movie.posterURL"
                                     :width="size"
                                     :height="size"
                                     preserveAspectRatio="xMidYMid slice"
                                 />
                             </pattern>
                         </defs>
-                        <g v-for="(movie, i) in randomPicks" :key="movie.title">
+                        <g v-for="(entry, i) in allMovies" :key="entry.movie.title + '-' + i">
                             <path
                                 :d="
                                     describeArc(
                                         size / 2,
                                         size / 2,
                                         size / 2 - 4,
-                                        i * angle,
-                                        (i + 1) * angle,
+                                        getMovieAngles(i).startAngle,
+                                        getMovieAngles(i).endAngle,
                                     )
                                 "
                                 :fill="
-                                    movie.posterURL
+                                    entry.movie.posterURL
                                         ? `url(#poster-pattern-${i})`
                                         : colors[i % colors.length]
                                 "
@@ -56,11 +56,10 @@
                                 stroke-width="2"
                             />
                             <foreignObject
-                                :x="getTextX(i) - 40"
-                                :y="getTextY(i) - 20"
+                                :x="getTextX(getMovieAngles(i)) - 40"
+                                :y="getTextY(getMovieAngles(i)) - 20"
                                 width="80"
                                 height="40"
-                                :transform="`rotate(${i * angle + angle.value / 2} ${getTextX(i)} ${getTextY(i)})`"
                             >
                                 <div
                                     xmlns="http://www.w3.org/1999/xhtml"
@@ -81,7 +80,7 @@
                                         justify-content: center;
                                     "
                                 >
-                                    {{ movie.title }}
+                                    {{ entry.movie.title }}
                                 </div>
                             </foreignObject>
                         </g>
@@ -107,9 +106,32 @@ const badMoviesFetch = await useFetch('/api/sheets', {
     headers: { 'Content-Type': 'application/json' },
 })
 const badMoviesResponse = badMoviesFetch.data
-const flattenedMovies = Object.values(badMoviesResponse.value?.randomPicks || {}).flat()
 
-const randomPicks = ref<BadMovie[]>(flattenedMovies as BadMovie[])
+// --- Prepare data for subdivided spinner ---
+const randomPicksObj = computed(() => badMoviesResponse.value?.randomPicks || {})
+const people = computed(() => Object.keys(randomPicksObj.value))
+const moviesByPerson = computed(() =>
+    people.value.map((person) => randomPicksObj.value[person] || []),
+)
+const totalMovies = computed(() => moviesByPerson.value.reduce((sum, arr) => sum + arr.length, 0))
+
+const allMovies = computed(() => {
+    const arr: { movie: BadMovie; person: string; globalIndex: number; personIndex: number }[] = []
+    let globalIndex = 0
+    for (let p = 0; p < people.value.length; p++) {
+        for (let m = 0; m < moviesByPerson.value[p].length; m++) {
+            arr.push({
+                movie: moviesByPerson.value[p][m],
+                person: people.value[p],
+                globalIndex,
+                personIndex: m,
+            })
+            globalIndex++
+        }
+    }
+    return arr
+})
+
 const colors = [
     '#a94fca',
     '#ee4266',
@@ -128,7 +150,13 @@ const colors = [
 const size = 400
 const spinTime = 3000
 
-const angle = computed(() => (randomPicks.value.length ? 360 / randomPicks.value.length : 360))
+const anglePerMovie = computed(() => (totalMovies.value > 0 ? 360 / totalMovies.value : 360))
+
+function getMovieAngles(globalIndex: number) {
+    const startAngle = globalIndex * anglePerMovie.value
+    const endAngle = (globalIndex + 1) * anglePerMovie.value
+    return { startAngle, endAngle }
+}
 
 function polarToCartesian(cx: number, cy: number, r: number, angleInDegrees: number) {
     const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
@@ -161,12 +189,12 @@ function describeArc(cx: number, cy: number, r: number, startAngle: number, endA
     ].join(' ')
 }
 
-function getTextX(i: number) {
-    const a = (i + 0.5) * angle.value - 90
+function getTextX({ startAngle, endAngle }: { startAngle: number; endAngle: number }) {
+    const a = (startAngle + endAngle) / 2 - 90
     return size / 2 + (size / 3.2) * Math.cos((a * Math.PI) / 180)
 }
-function getTextY(i: number) {
-    const a = (i + 0.5) * angle.value - 90
+function getTextY({ startAngle, endAngle }: { startAngle: number; endAngle: number }) {
+    const a = (startAngle + endAngle) / 2 - 90
     return size / 2 + (size / 3.2) * Math.sin((a * Math.PI) / 180)
 }
 
@@ -194,6 +222,39 @@ function spin() {
     font-family: 'Poppins', sans-serif;
 }
 
+@at-root {
+    @keyframes movePole {
+        0%,
+        100% {
+            transform: translateZ(0) translateY(-25%);
+            height: 35%;
+        }
+        5%,
+        50% {
+            height: 10%;
+        }
+        10% {
+            transform: translateZ(0) translateY(50%);
+            height: 35%;
+        }
+        15% {
+            height: 35%;
+        }
+    }
+}
+
+@at-root {
+    @keyframes moveLever {
+        0%,
+        100% {
+            transform: translateY(0%);
+        }
+        10% {
+            transform: translateY(240%);
+        }
+    }
+}
+
 .moviesContainer {
     display: flex;
     flex-direction: row;
@@ -213,15 +274,21 @@ function spin() {
     }
 
     .wheelContainer {
-        #main {
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         .spinner {
+            &.is-spinning {
+                .spinner-lever:after {
+                    animation: movePole 3000ms ease-in-out;
+                }
+                .spinner-lever-button {
+                    animation: moveLever 3000ms ease-in-out;
+                }
+            }
             --spin-time: 3000;
             position: relative;
             width: 400px;
@@ -274,29 +341,6 @@ function spin() {
                 background-color: lightgrey;
                 transform: translateZ(0) translateY(-25%);
                 backface-visibility: hidden;
-                .is-spinning & {
-                    animation: movePole 3000ms ease-in-out;
-                }
-                @at-root {
-                    @keyframes movePole {
-                        0%,
-                        100% {
-                            transform: translateZ(0) translateY(-25%);
-                            height: 35%;
-                        }
-                        5%,
-                        50% {
-                            height: 10%;
-                        }
-                        10% {
-                            transform: translateZ(0) translateY(50%);
-                            height: 35%;
-                        }
-                        15% {
-                            height: 35%;
-                        }
-                    }
-                }
             }
             &-button {
                 text-indent: -9999px;
@@ -314,20 +358,6 @@ function spin() {
                 right: 0;
                 margin: auto;
                 z-index: 1;
-                .is-spinning & {
-                    animation: moveLever 3000ms ease-in-out;
-                }
-                @at-root {
-                    @keyframes moveLever {
-                        0%,
-                        100% {
-                            transform: translateY(0%);
-                        }
-                        10% {
-                            transform: translateY(240%);
-                        }
-                    }
-                }
             }
         }
     }
