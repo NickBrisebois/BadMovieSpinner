@@ -7,7 +7,11 @@ export interface BadMovie {
 }
 
 export interface GetMoviesResponse {
-    randomPicks: BadMovie[]
-    watchedMovies: BadMovie[]
-    sortedMoviesByPerson?: Map<string, BadMovie[]>
+    randomPicks: object
+    watchedMovies: object
+    sortedMoviesByPerson?: object
+}
+
+export interface GetMoviesRequestQueries {
+    oneMoviePerPerson?: boolean
 }

@@ -59,19 +59,23 @@ export class BadMovieGSheet {
         return randomPicks
     }
 
-    async getMovies(): Promise<GetMoviesResponse> {
+    async getMovies(oneMoviePerPerson: boolean): Promise<GetMoviesResponse> {
         await this.googleDoc.sheetsByIndex[0].loadHeaderRow(5)
         const rows = await this.googleDoc.sheetsByIndex[0].getRows({
             offset: 5,
         })
         const parsedMovies = await this.parseMoviesFromRows(rows)
         const moviesByPerson = this.sortMoviesBySuggestedBy(parsedMovies)
-        const randomPicks = this.getMoviePerPerson(moviesByPerson)
+        const randomPicks = oneMoviePerPerson
+            ? this.getMoviePerPerson(moviesByPerson)
+            : parsedMovies.filter((movie) => !movie.watched)
 
         return {
-            randomPicks: randomPicks,
-            watchedMovies: parsedMovies.filter((movie) => movie.watched),
-            sortedMoviesByPerson: moviesByPerson,
+            randomPicks: Object.fromEntries(this.sortMoviesBySuggestedBy(randomPicks)),
+            watchedMovies: Object.fromEntries(
+                this.sortMoviesBySuggestedBy(parsedMovies.filter((movie) => movie.watched)),
+            ),
+            sortedMoviesByPerson: Object.fromEntries(moviesByPerson),
         } as GetMoviesResponse
     }
 

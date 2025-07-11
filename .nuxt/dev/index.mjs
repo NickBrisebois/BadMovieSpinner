@@ -2135,18 +2135,20 @@ class BadMovieGSheet {
     }
     return randomPicks;
   }
-  async getMovies() {
+  async getMovies(oneMoviePerPerson) {
     await this.googleDoc.sheetsByIndex[0].loadHeaderRow(5);
     const rows = await this.googleDoc.sheetsByIndex[0].getRows({
       offset: 5
     });
     const parsedMovies = await this.parseMoviesFromRows(rows);
     const moviesByPerson = this.sortMoviesBySuggestedBy(parsedMovies);
-    const randomPicks = this.getMoviePerPerson(moviesByPerson);
+    const randomPicks = oneMoviePerPerson ? this.getMoviePerPerson(moviesByPerson) : parsedMovies.filter((movie) => !movie.watched);
     return {
-      randomPicks,
-      watchedMovies: parsedMovies.filter((movie) => movie.watched),
-      sortedMoviesByPerson: moviesByPerson
+      randomPicks: Object.fromEntries(this.sortMoviesBySuggestedBy(randomPicks)),
+      watchedMovies: Object.fromEntries(
+        this.sortMoviesBySuggestedBy(parsedMovies.filter((movie) => movie.watched))
+      ),
+      sortedMoviesByPerson: Object.fromEntries(moviesByPerson)
     };
   }
   async getTMDbPosterURL(tmdbURL) {
@@ -2163,9 +2165,11 @@ class BadMovieGSheet {
 
 const sheets_get = defineEventHandler(async (event) => {
   console.log("Fetching Google Sheets data...");
+  const queries = getQuery$1(event);
+  const oneMoviePerPerson = queries.oneMoviePerPerson !== void 0 ? queries.oneMoviePerPerson.toUpperCase() == "TRUE" : false;
   const gSheetData = new BadMovieGSheet(globalThis._importMeta_.env.VITE_GOOGLE_SHEETS_ID);
   await gSheetData.loadSheetsInfo();
-  return await gSheetData.getMovies();
+  return await gSheetData.getMovies(oneMoviePerPerson);
 });
 
 const sheets_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

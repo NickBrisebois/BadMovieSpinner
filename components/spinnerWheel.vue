@@ -18,6 +18,24 @@
                             transition: `transform ${spinTime}ms cubic-bezier(0.33,1,0.68,1)`,
                         }"
                     >
+                        <defs>
+                            <pattern
+                                v-for="(movie, i) in randomPicks"
+                                :id="`poster-pattern-${i}`"
+                                patternUnits="objectBoundingBox"
+                                :width="1"
+                                :height="1"
+                                :key="movie.title"
+                            >
+                                <image
+                                    v-if="movie.posterURL"
+                                    :href="movie.posterURL"
+                                    :width="size"
+                                    :height="size"
+                                    preserveAspectRatio="xMidYMid slice"
+                                />
+                            </pattern>
+                        </defs>
                         <g v-for="(movie, i) in randomPicks" :key="movie.title">
                             <path
                                 :d="
@@ -29,7 +47,11 @@
                                         (i + 1) * angle,
                                     )
                                 "
-                                :fill="colors[i % colors.length]"
+                                :fill="
+                                    movie.posterURL
+                                        ? `url(#poster-pattern-${i})`
+                                        : colors[i % colors.length]
+                                "
                                 stroke="#232526"
                                 stroke-width="2"
                             />
@@ -52,7 +74,11 @@
                                         height: 40px;
                                         line-height: 1.1;
                                         word-break: break-word;
-                                        /* REMOVE white-space: nowrap; */
+                                        background: rgba(0, 0, 0, 0.5);
+                                        border-radius: 6px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
                                     "
                                 >
                                     {{ movie.title }}
@@ -68,14 +94,22 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
 import type { BadMovie } from '~/shared/types/movie'
 
 const spinContainer = ref<HTMLElement | null>(null)
 const spinWheel = ref<SVGSVGElement | null>(null)
 const currDeg = ref(0)
 
-const randomPicks = ref<BadMovie[]>([])
+const badMoviesFetch = await useFetch('/api/sheets', {
+    method: 'GET',
+    query: { oneMoviePerPerson: false },
+    headers: { 'Content-Type': 'application/json' },
+})
+const badMoviesResponse = badMoviesFetch.data
+const flattenedMovies = Object.values(badMoviesResponse.value?.randomPicks || {}).flat()
+
+const randomPicks = ref<BadMovie[]>(flattenedMovies as BadMovie[])
 const colors = [
     '#a94fca',
     '#ee4266',
@@ -147,15 +181,6 @@ function spin() {
         spinContainer.value?.classList.remove('is-spinning')
     }, spinTime)
 }
-
-onMounted(async () => {
-    const badMoviesResponse = await useFetch('/api/sheets', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-    })
-    const movies = badMoviesResponse.data.value?.randomPicks || []
-    randomPicks.value = movies
-})
 </script>
 
 <style lang="scss" scoped>
