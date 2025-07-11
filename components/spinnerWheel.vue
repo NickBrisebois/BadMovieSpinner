@@ -1,139 +1,139 @@
 <template>
     <div class="moviesContainer">
         <div class="wheelContainer">
-            <div id="main">
-                <div class="spinner" id="spinContainer" ref="spinContainer">
-                    <svg
-                        class="winning-indicator"
-                        :width="40"
-                        :height="30"
-                        style="
-                            position: absolute;
-                            left: 50%;
-                            top: -18px;
-                            transform: translateX(-50%) rotate(180deg);
-                            z-index: 2;
-                        "
-                        viewBox="0 0 40 30"
-                    >
-                        <polygon
-                            points="20,0 0,30 40,30"
-                            fill="#fff"
+            <div class="spinner" id="spinContainer" ref="spinContainer">
+                <svg
+                    class="winning-indicator"
+                    :width="40"
+                    :height="30"
+                    style="
+                        position: absolute;
+                        left: 50%;
+                        top: -18px;
+                        transform: translateX(-50%) rotate(180deg);
+                        z-index: 2;
+                    "
+                    viewBox="0 0 40 30"
+                >
+                    <polygon
+                        points="20,0 0,30 40,30"
+                        fill="#fff"
+                        stroke="#232526"
+                        stroke-width="2"
+                        opacity="0.85"
+                    />
+                </svg>
+                <div class="spinner-lever">
+                    <button class="spinner-lever-button" id="spin" type="button" @click="spin">
+                        Pull the lever to spin the wheel
+                    </button>
+                </div>
+                <svg
+                    ref="spinWheel"
+                    class="spinner-svg"
+                    :width="size"
+                    :height="size"
+                    :viewBox="`0 0 ${size} ${size}`"
+                    :style="{
+                        transition: `transform ${spinTime}ms cubic-bezier(0.33,1,0.68,1)`,
+                    }"
+                >
+                    <defs>
+                        <pattern
+                            v-for="(entry, i) in allMovies"
+                            :id="`poster-pattern-${i}`"
+                            patternUnits="objectBoundingBox"
+                            :width="1"
+                            :height="1"
+                            :key="entry.movie.title"
+                        >
+                            <image
+                                v-if="entry.movie.posterURL"
+                                :href="entry.movie.posterURL"
+                                :width="size"
+                                :height="size"
+                                preserveAspectRatio="xMidYMid slice"
+                            />
+                        </pattern>
+                    </defs>
+                    <g v-for="(entry, i) in allMovies" :key="entry.movie.title + '-' + i">
+                        <path
+                            :d="
+                                describeArc(
+                                    size / 2,
+                                    size / 2,
+                                    size / 2 - 4,
+                                    entry.sliceStartAngle,
+                                    entry.sliceEndAngle,
+                                )
+                            "
+                            :fill="
+                                entry.movie.posterURL
+                                    ? `url(#poster-pattern-${i})`
+                                    : colours[i % colours.length]
+                            "
                             stroke="#232526"
                             stroke-width="2"
-                            opacity="0.85"
                         />
-                    </svg>
-                    <div class="spinner-lever">
-                        <button class="spinner-lever-button" id="spin" type="button" @click="spin">
-                            Pull the lever to spin the wheel
-                        </button>
-                    </div>
-                    <svg
-                        ref="spinWheel"
-                        class="spinner-svg"
-                        :width="size"
-                        :height="size"
-                        :viewBox="`0 0 ${size} ${size}`"
-                        :style="{
-                            transition: `transform ${spinTime}ms cubic-bezier(0.33,1,0.68,1)`,
-                        }"
-                    >
-                        <defs>
-                            <pattern
-                                v-for="(entry, i) in allMovies"
-                                :id="`poster-pattern-${i}`"
-                                patternUnits="objectBoundingBox"
-                                :width="1"
-                                :height="1"
-                                :key="entry.movie.title"
+                        <foreignObject
+                            :x="getTextX(entry.sliceStartAngle, entry.sliceEndAngle, size) - 40"
+                            :y="getTextY(entry.sliceStartAngle, entry.sliceEndAngle, size) - 20"
+                            width="80"
+                            height="40"
+                        >
+                            <div
+                                xmlns="http://www.w3.org/1999/xhtml"
+                                style="
+                                    color: #fff;
+                                    font-size: 12px;
+                                    text-align: center;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    width: 80px;
+                                    height: 40px;
+                                    line-height: 1.1;
+                                    word-break: break-word;
+                                    background: rgba(0, 0, 0, 0.5);
+                                    border-radius: 6px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                "
                             >
-                                <image
-                                    v-if="entry.movie.posterURL"
-                                    :href="entry.movie.posterURL"
-                                    :width="size"
-                                    :height="size"
-                                    preserveAspectRatio="xMidYMid slice"
-                                />
-                            </pattern>
-                        </defs>
-                        <g v-for="(entry, i) in allMovies" :key="entry.movie.title + '-' + i">
-                            <path
-                                :d="
-                                    describeArc(
-                                        size / 2,
-                                        size / 2,
-                                        size / 2 - 4,
-                                        getMovieAngles(i, anglePerMovie).startAngle,
-                                        getMovieAngles(i, anglePerMovie).endAngle,
-                                    )
-                                "
-                                :fill="
-                                    entry.movie.posterURL
-                                        ? `url(#poster-pattern-${i})`
-                                        : colours[i % colours.length]
-                                "
-                                stroke="#232526"
-                                stroke-width="2"
-                            />
-                            <foreignObject
-                                :x="getTextX(getMovieAngles(i, anglePerMovie), size) - 40"
-                                :y="getTextY(getMovieAngles(i, anglePerMovie), size) - 20"
-                                width="80"
-                                height="40"
-                            >
-                                <div
-                                    xmlns="http://www.w3.org/1999/xhtml"
-                                    style="
-                                        color: #fff;
-                                        font-size: 12px;
-                                        text-align: center;
-                                        overflow: hidden;
-                                        text-overflow: ellipsis;
-                                        width: 80px;
-                                        height: 40px;
-                                        line-height: 1.1;
-                                        word-break: break-word;
-                                        background: rgba(0, 0, 0, 0.5);
-                                        border-radius: 6px;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                    "
-                                >
-                                    {{ entry.movie.title }}
-                                </div>
-                            </foreignObject>
-                        </g>
-                        <g v-if="selectedIndex !== null">
-                            <path
-                                :d="
-                                    describeArc(
-                                        size / 2,
-                                        size / 2,
-                                        size / 2 - 4,
-                                        getMovieAngles(selectedIndex, anglePerMovie).startAngle,
-                                        getMovieAngles(selectedIndex, anglePerMovie).endAngle,
-                                    )
-                                "
-                                fill="none"
-                                stroke="red"
-                                stroke-width="6"
-                                style="pointer-events: none"
-                            />
-                        </g>
-                    </svg>
-                </div>
+                                {{ entry.movie.title }}
+                            </div>
+                        </foreignObject>
+                    </g>
+                    <!-- Highlight the selected slice on top -->
+                    <g v-if="selectedIndex !== null">
+                        <path
+                            :d="
+                                describeArc(
+                                    size / 2,
+                                    size / 2,
+                                    size / 2 - 4,
+                                    allMovies[selectedIndex]?.sliceStartAngle ?? 0,
+                                    allMovies[selectedIndex]?.sliceEndAngle ?? 0,
+                                )
+                            "
+                            fill="none"
+                            stroke="red"
+                            stroke-width="6"
+                            style="pointer-events: none"
+                        />
+                    </g>
+                </svg>
             </div>
         </div>
-        <div class="metadata"></div>
+        <div class="metadata">
+            <h1>Stuff</h1>
+        </div>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import type { BadMovie } from '~/shared/types/movie'
-import { getMovieAngles, describeArc, getTextX, getTextY } from '~/utils/spinnerMath'
 
 const selectedIndex = ref<number | null>(null)
 const spinContainer = ref<HTMLElement | null>(null)
@@ -147,38 +147,51 @@ const badMoviesFetch = await useFetch('/api/sheets', {
 })
 const badMoviesResponse = badMoviesFetch.data
 
-// --- Prepare data for subdivided spinner ---
 const randomPicksObj = computed(() => badMoviesResponse.value?.randomPicks || {})
 const people = computed(() => Object.keys(randomPicksObj.value))
 const moviesByPerson = computed(() =>
     people.value.map((person) => randomPicksObj.value[person] || []),
 )
-const totalMovies = computed(() => moviesByPerson.value.reduce((sum, arr) => sum + arr.length, 0))
+const numPeople = computed(() => people.value.length)
 
 const allMovies = computed(() => {
-    const arr: { movie: BadMovie; person: string; globalIndex: number; personIndex: number }[] = []
+    const arr: {
+        movie: BadMovie
+        person: string
+        globalIndex: number
+        personIndex: number
+        sliceStartAngle: number
+        sliceEndAngle: number
+    }[] = []
     let globalIndex = 0
-    for (let p = 0; p < people.value.length; p++) {
-        for (let m = 0; m < moviesByPerson.value[p].length; m++) {
+    let sectorStart = 0
+    for (let p = 0; p < numPeople.value; p++) {
+        const person = people.value[p]
+        const movies = moviesByPerson.value[p]
+        const sectorAngle = 360 / numPeople.value
+        const sliceAngle = sectorAngle / movies.length
+        for (let m = 0; m < movies.length; m++) {
+            const sliceStartAngle = sectorStart + m * sliceAngle
+            const sliceEndAngle = sliceStartAngle + sliceAngle
             arr.push({
-                movie: moviesByPerson.value[p][m],
-                person: people.value[p],
+                movie: movies[m],
+                person,
                 globalIndex,
                 personIndex: m,
+                sliceStartAngle,
+                sliceEndAngle,
             })
             globalIndex++
         }
+        sectorStart += sectorAngle
     }
     return arr
 })
 
-// TODO: Get rid of colours since we just use posters now
 const colours = ['#a94fca']
 
 const size = 400
 const spinTime = 3000
-
-const anglePerMovie = computed(() => (totalMovies.value > 0 ? 360 / totalMovies.value : 360))
 
 function spin() {
     if (!spinContainer.value || !spinWheel.value) return
@@ -189,10 +202,15 @@ function spin() {
     currDeg.value = randDeg
     setTimeout(() => {
         spinContainer.value?.classList.remove('is-spinning')
-
+        // Find the winning slice based on the final angle
         const normalizedDeg = randDeg % 360
-        const winningIndex = Math.floor(((360 - normalizedDeg) % 360) / anglePerMovie.value)
-        selectedIndex.value = winningIndex
+        // Find which slice contains the 12 o'clock position (0 deg)
+        const winning = allMovies.value.findIndex(
+            (entry) =>
+                (360 - normalizedDeg) % 360 >= entry.sliceStartAngle &&
+                (360 - normalizedDeg) % 360 < entry.sliceEndAngle,
+        )
+        selectedIndex.value = winning
     }, spinTime)
 }
 </script>
@@ -260,8 +278,7 @@ function spin() {
     }
 
     .wheelContainer {
-        height: 100vh;
-        width: 100vw;
+        width: 50vw;
         overflow: hidden;
         display: flex;
         justify-content: center;

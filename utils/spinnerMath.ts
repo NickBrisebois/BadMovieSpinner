@@ -7,21 +7,7 @@ function getMovieAngles(
     return { startAngle, endAngle }
 }
 
-function polarToCartesian(cx: number, cy: number, r: number, angleInDegrees: number) {
-    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
-    return {
-        x: cx + r * Math.cos(angleInRadians),
-        y: cy + r * Math.sin(angleInRadians),
-    }
-}
-
-function describeArc(
-    cx: number,
-    cy: number,
-    r: number,
-    startAngle: number,
-    endAngle: number,
-): string {
+function describeArc(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
     const start = polarToCartesian(cx, cy, r, endAngle)
     const end = polarToCartesian(cx, cy, r, startAngle)
     const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
@@ -44,18 +30,20 @@ function describeArc(
     ].join(' ')
 }
 
-function getTextX(
-    { startAngle, endAngle }: { startAngle: number; endAngle: number },
-    size: number,
-): number {
+function polarToCartesian(cx: number, cy: number, r: number, angleInDegrees: number) {
+    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
+    return {
+        x: cx + r * Math.cos(angleInRadians),
+        y: cy + r * Math.sin(angleInRadians),
+    }
+}
+
+function getTextX(startAngle: number, endAngle: number, size: number) {
     const a = (startAngle + endAngle) / 2 - 90
     return size / 2 + (size / 3.2) * Math.cos((a * Math.PI) / 180)
 }
 
-function getTextY(
-    { startAngle, endAngle }: { startAngle: number; endAngle: number },
-    size: number,
-): number {
+function getTextY(startAngle: number, endAngle: number, size: number) {
     const a = (startAngle + endAngle) / 2 - 90
     return size / 2 + (size / 3.2) * Math.sin((a * Math.PI) / 180)
 }
