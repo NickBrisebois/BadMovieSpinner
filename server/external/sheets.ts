@@ -1,6 +1,7 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet'
 import { JWT } from 'google-auth-library'
 import { BadMovie, GetMoviesResponse } from '~/shared/types/movie'
+import creds from '../../gcpserviceaccountkey.json'
 
 export class BadMovieGSheet {
     private serviceAccountAuth: JWT
@@ -8,8 +9,8 @@ export class BadMovieGSheet {
 
     constructor(spreadsheetId: string) {
         this.serviceAccountAuth = new JWT({
-            email: import.meta.env.VITE_GOOGLE_SERVICE_EMAIL,
-            key: import.meta.env.VITE_GOOGLE_PRIVATE_KEY,
+            email: creds.client_email,
+            key: creds.private_key,
             scopes: import.meta.env.VITE_GOOGLE_SCOPES.split(','),
         })
 
