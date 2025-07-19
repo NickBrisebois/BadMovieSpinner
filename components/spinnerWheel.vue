@@ -1,9 +1,9 @@
 <template>
-    <div class="moviesContainer">
-        <div class="wheelContainer">
-            <div class="spinner" id="spinContainer" ref="spinContainer">
+    <div :class="$style.moviesContainer">
+        <div :class="$style.wheelContainer">
+            <div :class="[$style.spinner, { [$style.isSpinning]: isSpinning }]" ref="spinContainer">
                 <svg
-                    class="winning-indicator"
+                    :class="$style.winningIndicator"
                     :width="40"
                     :height="30"
                     style="
@@ -23,14 +23,19 @@
                         opacity="0.85"
                     />
                 </svg>
-                <div class="spinner-lever">
-                    <button class="spinner-lever-button" id="spin" type="button" @click="spin">
+                <div :class="$style.spinnerLever">
+                    <button
+                        :class="$style.spinnerLeverButton"
+                        id="spin"
+                        type="button"
+                        @click="spin"
+                    >
                         Pull the lever to spin the wheel
                     </button>
                 </div>
                 <svg
                     ref="spinWheel"
-                    class="spinner-svg"
+                    :class="$style.spinnerSVG"
                     :width="size"
                     :height="size"
                     :viewBox="`0 0 ${size} ${size}`"
@@ -125,20 +130,25 @@
                 </svg>
             </div>
         </div>
-        <div class="metadata">
+        <div :class="$style.metadata">
             <h1>Stuff</h1>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
+import { confetti } from '@tsparticles/confetti'
 import { ref, computed } from 'vue'
 import type { BadMovie } from '~/shared/types/movie'
+
+const size = 400
+const spinTime = 1000
 
 const selectedIndex = ref<number | null>(null)
 const spinContainer = ref<HTMLElement | null>(null)
 const spinWheel = ref<SVGSVGElement | null>(null)
 const currDeg = ref(0)
+const isSpinning = ref(false)
 
 const badMoviesFetch = await useFetch('/api/sheets', {
     method: 'GET',
@@ -146,14 +156,14 @@ const badMoviesFetch = await useFetch('/api/sheets', {
     headers: { 'Content-Type': 'application/json' },
 })
 const badMoviesResponse = badMoviesFetch.data
-
-const randomPicksObj = computed(() => badMoviesResponse.value?.randomPicks || {})
+const randomPicksObj = computed(
+    () => badMoviesResponse.value?.randomPicks || ({} as Record<string, BadMovie[]>),
+)
 const people = computed(() => Object.keys(randomPicksObj.value))
 const moviesByPerson = computed(() =>
     people.value.map((person) => randomPicksObj.value[person] || []),
 )
 const numPeople = computed(() => people.value.length)
-
 const allMovies = computed(() => {
     const arr: {
         movie: BadMovie
@@ -190,18 +200,65 @@ const allMovies = computed(() => {
 
 const colours = ['#a94fca']
 
-const size = 400
-const spinTime = 3000
+const confettiImages = [
+    '/assets/images/confetti.png',
+    '/assets/images/confetti2.png',
+    '/assets/images/confetti3.png',
+    '/assets/images/confetti4.png',
+    '/assets/images/confetti5.png',
+]
+
+async function burstConfetti() {
+    const spinnerElement = spinContainer.value
+    if (!spinnerElement) return
+
+    const rect = spinnerElement.getBoundingClientRect()
+    const centreX = (rect.left + rect.width / 2) / window.innerWidth
+    const centreY = (rect.top + rect.height / 2) / window.innerHeight
+
+    for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+            confetti('tsparticles', {
+                shapes: ['image'],
+                shapeOptions: {
+                    image: [
+                        {
+                            src: confettiImages[Math.floor(Math.random() * confettiImages.length)],
+                            width: 80,
+                            height: 80,
+                        },
+                    ],
+                },
+                particleCount: 50,
+                scalar: 6.0,
+                gravity: 0.4,
+                drift: 0.1,
+                ticks: 300,
+                startVelocity: 25 + i * 5, // Vary the velocity
+                zIndex: 1000,
+                origin: {
+                    x: centreX,
+                    y: centreY,
+                },
+                angle: 90,
+                spread: 60 + i * 20, // Vary the spread
+            })
+        }, i * 500) // Stagger the bursts
+    }
+}
 
 function spin() {
+    burstConfetti()
     if (!spinContainer.value || !spinWheel.value) return
+
+    isSpinning.value = true
+
     const startingDeg = currDeg.value
     const randDeg = startingDeg + Math.round(Math.random() * (3000 - 360) + 360)
-    spinContainer.value.classList.add('is-spinning')
     spinWheel.value.style.transform = `rotate(${randDeg}deg)`
     currDeg.value = randDeg
+
     setTimeout(() => {
-        spinContainer.value?.classList.remove('is-spinning')
         // Find the winning slice based on the final angle
         const normalizedDeg = randDeg % 360
         // Find which slice contains the 12 o'clock position (0 deg)
@@ -211,178 +268,15 @@ function spin() {
                 (360 - normalizedDeg) % 360 < entry.sliceEndAngle,
         )
         selectedIndex.value = winning
+        burstConfetti()
+
+        isSpinning.value = false
     }, spinTime)
 }
+
+onMounted(() => {
+    burstConfetti()
+})
 </script>
 
-<style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
-
-* {
-    margin: 0;
-    padding: 0;
-    background: transparent;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-
-@at-root {
-    @keyframes movePole {
-        0%,
-        100% {
-            transform: translateZ(0) translateY(-25%);
-            height: 35%;
-        }
-        5%,
-        50% {
-            height: 10%;
-        }
-        10% {
-            transform: translateZ(0) translateY(50%);
-            height: 35%;
-        }
-        15% {
-            height: 35%;
-        }
-    }
-}
-
-@at-root {
-    @keyframes moveLever {
-        0%,
-        100% {
-            transform: translateY(0%);
-        }
-        10% {
-            transform: translateY(240%);
-        }
-    }
-}
-
-.moviesContainer {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-    min-height: 100vh;
-    gap: 2em;
-
-    .metadata {
-        margin-top: 1em;
-        color: #fff;
-        font-size: 0.9em;
-        min-width: 20em;
-        min-height: 20em;
-        text-align: center;
-        border: 1px solid green;
-    }
-
-    .wheelContainer {
-        width: 50vw;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        .spinner {
-            &.is-spinning {
-                .spinner-lever:after {
-                    animation: movePole 3000ms ease-in-out;
-                }
-                .spinner-lever-button {
-                    animation: moveLever 3000ms ease-in-out;
-                }
-            }
-            --spin-time: 3000;
-            position: relative;
-            width: 400px;
-            height: 400px;
-            margin: 2rem auto;
-            .spinner-svg {
-                display: block;
-                margin: 0 auto;
-                width: 100%;
-                height: auto;
-                max-width: 400px;
-                max-height: 400px;
-                border-radius: 50%;
-                background: #232526;
-                box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
-            }
-        }
-        .highlighted-slice {
-            stroke: red;
-            stroke-width: 3;
-        }
-        .spinner-lever {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            margin: auto;
-            left: calc(100% + 0.4vw);
-            border: 0.1vw solid grey;
-            background-color: lightgrey;
-            width: 4vw;
-            height: 8.5vw;
-            &:before,
-            &:after {
-                content: '';
-                display: block;
-                position: absolute;
-                left: 0;
-                right: 0;
-                margin: auto;
-            }
-            &:before {
-                top: 0;
-                bottom: 0;
-                background-color: grey;
-                height: 80%;
-                width: 1.2vw;
-            }
-            &:after {
-                top: 0;
-                bottom: 0;
-                margin: auto;
-                height: 35%;
-                width: 0.8vw;
-                background-color: lightgrey;
-                transform: translateZ(0) translateY(-25%);
-                backface-visibility: hidden;
-            }
-            &-button {
-                text-indent: -9999px;
-                position: absolute;
-                border: 0;
-                background: transparent;
-                padding: 0;
-                width: 1.8vw;
-                height: 1.8vw;
-                background-color: red;
-                border-radius: 100%;
-                cursor: pointer;
-                top: calc(25% - #{1.8 / 2 * 1vw});
-                left: 0;
-                right: 0;
-                margin: auto;
-                z-index: 1;
-            }
-        }
-    }
-}
-
-@media (max-width: 900px) {
-    .moviesContainer {
-        flex-direction: column;
-        align-items: center;
-        gap: 1em;
-        .wheelContainer {
-            width: 100vw;
-            height: 100vw;
-        }
-        .metadata {
-            max-width: 100vw;
-            width: 100%;
-        }
-    }
-}
-</style>
+<style lang="scss" module src="~/public/assets/styles/components/spinnerWheel.module.scss"></style>
