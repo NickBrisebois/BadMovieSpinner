@@ -142,7 +142,7 @@ import { ref, computed } from 'vue'
 import type { BadMovie } from '~/shared/types/movie'
 
 const size = 400
-const spinTime = 1000
+const spinTime = 10000
 
 const selectedIndex = ref<number | null>(null)
 const spinContainer = ref<HTMLElement | null>(null)
@@ -234,21 +234,20 @@ async function burstConfetti() {
                 gravity: 0.4,
                 drift: 0.1,
                 ticks: 300,
-                startVelocity: 25 + i * 5, // Vary the velocity
+                startVelocity: 25 + i * 5,
                 zIndex: 1000,
                 origin: {
                     x: centreX,
                     y: centreY,
                 },
                 angle: 90,
-                spread: 60 + i * 20, // Vary the spread
+                spread: 60 + i * 20,
             })
-        }, i * 500) // Stagger the bursts
+        }, i * 500)
     }
 }
 
 function spin() {
-    burstConfetti()
     if (!spinContainer.value || !spinWheel.value) return
 
     isSpinning.value = true
@@ -273,10 +272,6 @@ function spin() {
         isSpinning.value = false
     }, spinTime)
 }
-
-onMounted(() => {
-    burstConfetti()
-})
 </script>
 
 <style lang="scss" module src="~/public/assets/styles/components/spinnerWheel.module.scss"></style>
