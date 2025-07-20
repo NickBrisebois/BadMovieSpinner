@@ -190,23 +190,25 @@
 
         .section {
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 0 1.5em 0 1.5em;
+
+            &:first-child {
+                border-radius: 12px 12px 0 0;
+            }
+
+            &:last-child {
+                border-radius: 0 0 12px 12px;
+            }
         }
     }
 
     .personSection {
         margin-bottom: 1em;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
     }
 
     .personName {
-        color: #a94fca;
         font-size: 1.2em;
         font-weight: 600;
         margin-bottom: 1em;
@@ -315,10 +317,5 @@
             max-width: 80px;
             font-size: 0.75em;
         }
-    }
-}
-
-@media (max-width: 900px) {
-    .moviesContainer {
     }
 }

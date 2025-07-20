@@ -158,6 +158,34 @@
                     </div>
                 </div>
             </details>
+            <details :class="$style.section">
+                <summary>
+                    <strong>Watched Movies</strong>
+                </summary>
+
+                <div
+                    v-for="(movies, person) in watchedMovies"
+                    :key="person"
+                    :class="$style.personSection"
+                >
+                    <h2 :class="$style.personName">{{ movies[0].suggestedBy }}</h2>
+
+                    <div :class="$style.moviesGrid">
+                        <div v-for="movie in movies" :key="movie.title" :class="$style.movieCard">
+                            <div :class="$style.moviePoster">
+                                <img
+                                    v-if="movie.posterURL"
+                                    :src="movie.posterURL"
+                                    :alt="movie.title"
+                                />
+                                <div v-else :class="$style.noPoster">No Poster</div>
+                            </div>
+                            <div :class="$style.movieTitle">{{ movie.title }}</div>
+                            <div v-if="movie.year" :class="$style.movieYear">{{ movie.year }}</div>
+                        </div>
+                    </div>
+                </div>
+            </details>
         </div>
     </div>
 </template>
@@ -166,6 +194,7 @@
 const {
     size,
     spinTime,
+    watchedMovies,
     moviesByPerson,
     selectedIndex,
     spinContainer,

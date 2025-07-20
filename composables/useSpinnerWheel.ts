@@ -22,6 +22,9 @@ export const useSpinnerWheel = async () => {
     const randomPicksObj = computed(
         () => badMoviesResponse.value?.randomPicks || ({} as Record<string, BadMovie[]>),
     )
+    const watchedMovies = computed(
+        () => badMoviesResponse.value?.watchedMovies || ({} as Record<string, BadMovie[]>),
+    )
     const people = computed(() => Object.keys(randomPicksObj.value))
     const moviesByPerson = computed(() =>
         people.value.map((person) => randomPicksObj.value[person] || []),
@@ -145,6 +148,7 @@ export const useSpinnerWheel = async () => {
         spinContainer,
         spinWheel,
         currDeg,
+        watchedMovies,
         isSpinning,
         people,
         moviesByPerson,
