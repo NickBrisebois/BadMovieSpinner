@@ -43,16 +43,6 @@
     min-height: 100vh;
     gap: 2em;
 
-    .metadata {
-        margin-top: 1em;
-        color: #fff;
-        font-size: 0.9em;
-        min-width: 20em;
-        min-height: 20em;
-        text-align: center;
-        border: 1px solid green;
-    }
-
     .wheelContainer {
         width: 50vw;
         overflow: hidden;
@@ -148,6 +138,149 @@
             z-index: 1;
         }
     }
+
+    .metadata {
+        margin-top: 1em;
+        color: #fff;
+        font-size: 0.9em;
+        min-width: 25em;
+        max-width: 30em;
+        padding: 1.5em;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-height: 80vh;
+        overflow-y: auto;
+
+        summary {
+            padding: 1rem;
+            display: block;
+            padding-left: 2.2rem;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        summary:before {
+            content: '';
+            border-width: 0.4rem;
+            border-style: solid;
+            border-color: transparent transparent transparent #fff;
+            position: absolute;
+            top: 1.3rem;
+            left: 1rem;
+            transform: rotate(0);
+            transform-origin: 0.2rem 50%;
+            transition: 0.25s transform ease;
+        }
+
+        details[open] > summary:before {
+            transform: rotate(90deg);
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details > ul {
+            padding-bottom: 1rem;
+            margin-bottom: 0;
+        }
+
+        .section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 1.5em 0 1.5em;
+        }
+    }
+
+    .personSection {
+        margin-bottom: 1em;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .personName {
+        color: #a94fca;
+        font-size: 1.2em;
+        font-weight: 600;
+        margin-bottom: 1em;
+        padding-bottom: 0.5em;
+        border-bottom: 2px solid rgba(169, 79, 202, 0.3);
+        text-transform: capitalize;
+    }
+
+    .moviesGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.2em;
+    }
+
+    .movieCard {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: transform 0.2s ease;
+
+        &:hover {
+            transform: translateY(-4px);
+        }
+    }
+
+    .moviePoster {
+        width: 75px;
+        height: 125px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        margin-bottom: 0.5em;
+        position: relative;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s ease;
+        }
+
+        &:hover img {
+            transform: scale(1.05);
+        }
+    }
+
+    .noPoster {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #333, #555);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 0.7em;
+        text-align: center;
+    }
+
+    .movieTitle {
+        font-size: 0.8em;
+        font-weight: 500;
+        line-height: 1.2;
+        color: #fff;
+        margin-bottom: 0.25em;
+        max-width: 100px;
+        word-break: break-word;
+    }
+
+    .movieYear {
+        font-size: 0.7em;
+        color: #aaa;
+        font-weight: 300;
+    }
 }
 
 @media (max-width: 900px) {
@@ -164,6 +297,28 @@
         .metadata {
             max-width: 100vw;
             width: 100%;
+            min-width: unset;
+            max-height: 60vh;
         }
+
+        .moviesGrid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75em;
+        }
+
+        .moviePoster {
+            width: 80px;
+            height: 120px;
+        }
+
+        .movieTitle {
+            max-width: 80px;
+            font-size: 0.75em;
+        }
+    }
+}
+
+@media (max-width: 900px) {
+    .moviesContainer {
     }
 }
