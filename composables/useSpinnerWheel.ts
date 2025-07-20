@@ -20,7 +20,6 @@ export const useSpinnerWheel = async () => {
         headers: { 'Content-Type': 'application/json' },
     })
     const badMoviesResponse = badMoviesFetch.data
-    console.log(badMoviesResponse.value)
     const randomPicksObj = computed(
         () => badMoviesResponse.value?.randomPicks || ({} as Record<string, BadMovie[]>),
     )
@@ -66,6 +65,14 @@ export const useSpinnerWheel = async () => {
         return arr
     })
 
+    watch(selectedIndex, (newIndex, oldIndex) => {
+        if (isSpinning.value && newIndex !== oldIndex && newIndex !== null) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10)
+            }
+        }
+    })
+
     const colours = ['#a94fca']
 
     const confettiImages = [
@@ -75,6 +82,16 @@ export const useSpinnerWheel = async () => {
         '/assets/images/confetti4.png',
         '/assets/images/confetti5.png',
         '/assets/images/confetti6.png',
+    ]
+
+    const spinningAudio = ['/assets/mp3/spinning/spin.mp3', '/assets/mp3/spinning/spin2.mp3']
+
+    const selectedAudio = [
+        '/assets/mp3/selected/selected.mp3',
+        '/assets/mp3/selected/selected2.mp3',
+        '/assets/mp3/selected/selected3.mp3',
+        '/assets/mp3/selected/selected4.mp3',
+        '/assets/mp3/selected/selected5.mp3',
     ]
 
     async function burstConfetti() {
@@ -153,7 +170,14 @@ export const useSpinnerWheel = async () => {
     function spin() {
         if (!spinContainer.value || !spinWheel.value) return
 
+        if (isSpinning.value) return
+
         isSpinning.value = true
+
+        const chosenAudio = new Audio(
+            spinningAudio[Math.floor(Math.random() * spinningAudio.length)],
+        )
+        chosenAudio.play()
 
         trackRotation()
 
@@ -179,11 +203,19 @@ export const useSpinnerWheel = async () => {
             burstConfetti()
 
             isSpinning.value = false
+            chosenAudio.pause()
+
+            const selectedAudioClip = new Audio(
+                selectedAudio[Math.floor(Math.random() * selectedAudio.length)],
+            )
+            selectedAudioClip.play()
         }, spinTime)
     }
 
     function getSliceFilter(index: number): string {
-        if (selectedIndex.value === index) {
+        if (isSpinning.value && selectedIndex.value === index) {
+            return 'brightness(1.6) saturate(1.5) contrast(1.2) drop-shadow(0 0 15px rgba(255, 215, 0, 0.9))'
+        } else if (selectedIndex.value === index) {
             return 'brightness(1.5) saturate(1.4) contrast(1.1) drop-shadow(0 0 12px rgba(169, 79, 202, 0.8))'
         } else if (hoveredIndex.value === index) {
             return 'brightness(1.3) saturate(1.2) contrast(1.05) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
@@ -198,15 +230,6 @@ export const useSpinnerWheel = async () => {
     function selectSlice(index: number) {
         selectedIndex.value = index
     }
-
-    onUnmounted(() => {
-        if (animationFrame.value) {
-            cancelAnimationFrame(animationFrame.value)
-        }
-        isSpinning.value = false
-        selectedIndex.value = null
-        hoveredIndex.value = null
-    })
 
     return {
         size,

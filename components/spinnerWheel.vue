@@ -112,6 +112,25 @@
             </div>
         </div>
         <div :class="$style.metadata">
+            <div :class="$style.section">
+                <div v-if="selectedIndex !== null" :class="$style.selectedMovieInfo">
+                    <h2 :class="$style.selectedMovieTitle">
+                        {{ allMovies[selectedIndex].movie.title }}
+                    </h2>
+                    <p :class="$style.selectedMovieDescription">
+                        Suggested by: {{ allMovies[selectedIndex].movie.suggestedBy }}
+                    </p>
+                    <p v-if="allMovies[selectedIndex].movie.year" :class="$style.selectedMovieYear">
+                        Year: {{ allMovies[selectedIndex].movie.year }}
+                    </p>
+                </div>
+                <div v-else :class="$style.selectedMovieInfo">
+                    <h2 :class="$style.sectionTitle">Spin the Wheel!</h2>
+                    <p :class="$style.description">
+                        Click the button to spin the wheel and get a random bad movie to watch :)
+                    </p>
+                </div>
+            </div>
             <details :class="$style.section">
                 <summary>
                     <strong>All Movies</strong>
