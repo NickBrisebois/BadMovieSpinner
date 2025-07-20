@@ -50,7 +50,41 @@
                                 preserveAspectRatio="xMidYMid slice"
                             />
                         </pattern>
+                        <radialGradient
+                            v-for="(person, personIndex) in people"
+                            :key="`gradient-${person}`"
+                            :id="`person-gradient-${personIndex}`"
+                        >
+                            <stop
+                                offset="0%"
+                                :stop-color="getPersonColour(person, people)"
+                                stop-opacity="1"
+                            />
+                            <stop
+                                offset="100%"
+                                :stop-color="getPersonColour(person, people)"
+                                stop-opacity="0.8"
+                            />
+                        </radialGradient>
                     </defs>
+                    <g class="person-sections">
+                        <g v-for="(person, personIndex) in people" :key="`section-${person}`">
+                            <path
+                                :d="
+                                    describeArc(
+                                        size / 2,
+                                        size / 2,
+                                        size / 2 + 8,
+                                        personIndex * (360 / people.length),
+                                        (personIndex + 1) * (360 / people.length),
+                                    )
+                                "
+                                :fill="`url(#person-gradient-${personIndex})`"
+                                stroke="rgba(0, 0, 0, 0.1)"
+                                stroke-width="1"
+                            />
+                        </g>
+                    </g>
                     <g v-for="(entry, i) in allMovies" :key="entry.movie.title + '-' + i">
                         <path
                             :d="
@@ -65,20 +99,14 @@
                             :fill="
                                 entry.movie.posterURL
                                     ? `url(#poster-pattern-${i})`
-                                    : colours[i % colours.length]
+                                    : getPersonColour(entry.person, people)
                             "
-                            stroke="rgba(255, 255, 255, 0.2)"
-                            stroke-width="1.5"
                             :style="{
                                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                                 filter: getSliceFilter(i),
                                 transform: getSliceTransform(i),
                                 transformOrigin: 'center',
                                 cursor: 'pointer',
-                                '--slice-shadow':
-                                    hoveredIndex === i
-                                        ? '0 0 15px rgba(255,255,255,0.4)'
-                                        : '0 0 5px rgba(0,0,0,0.2)',
                             }"
                             @mouseenter="hoveredIndex = i"
                             @mouseleave="hoveredIndex = null"
@@ -170,6 +198,18 @@
                     </p>
                 </div>
             </div>
+            <div :class="[$style.personLegend, $style.section]">
+                <h3>Movie Suggesters</h3>
+                <div :class="$style.legendItems">
+                    <div v-for="(person, index) in people" :key="person" :class="$style.legendItem">
+                        <div
+                            :class="$style.legendColor"
+                            :style="{ backgroundColor: getPersonColour(person, people) }"
+                        ></div>
+                        <span>{{ person }}</span>
+                    </div>
+                </div>
+            </div>
             <details :class="$style.section">
                 <summary>
                     <strong>All Movies</strong>
@@ -241,12 +281,13 @@ const {
     spinWheel,
     isSpinning,
     allMovies,
-    colours,
+    getPersonColour,
     spin,
     getSliceFilter,
     getSliceTransform,
     hoveredIndex,
     selectSlice,
+    people,
 } = await useSpinnerWheel()
 </script>
 

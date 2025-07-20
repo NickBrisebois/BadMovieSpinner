@@ -14,6 +14,8 @@ export const useSpinnerWheel = async () => {
     const isSpinning = ref(false)
     const hoveredIndex = ref<number | null>(null)
 
+    const spinIntensity = ref<'gentle' | 'normal' | 'intense'>('normal')
+
     const badMoviesFetch = await useFetch('/api/sheets', {
         method: 'GET',
         query: { oneMoviePerPerson: false },
@@ -72,8 +74,6 @@ export const useSpinnerWheel = async () => {
             }
         }
     })
-
-    const colours = ['#a94fca']
 
     const confettiImages = [
         '/assets/images/confetti.png',
@@ -175,7 +175,6 @@ export const useSpinnerWheel = async () => {
 
     function spin() {
         if (!spinContainer.value || !spinWheel.value) return
-
         if (isSpinning.value) return
 
         isSpinning.value = true
@@ -187,19 +186,44 @@ export const useSpinnerWheel = async () => {
 
         trackRotation()
 
-        const startingDeg = currDeg.value
-        const randDeg = startingDeg + Math.round(Math.random() * (3000 - 360) + 360)
-        spinWheel.value.style.transform = `rotate(${randDeg}deg)`
-        currDeg.value = randDeg
+        const spinTimeInSeconds = spinTime / 1000
+        const intensityConfig = {
+            gentle: { speed: 300, variation: 0.2 },
+            normal: { speed: 450, variation: 0.3 },
+            intense: { speed: 600, variation: 0.4 },
+        }
+
+        const config = intensityConfig[spinIntensity.value]
+        const baseRotation = config.speed * spinTimeInSeconds
+
+        const variation = (Math.random() - 0.5) * 2 * config.variation * baseRotation
+        const totalRotation = baseRotation + variation
+
+        const minRotations =
+            spinIntensity.value === 'gentle'
+                ? 3 * 360
+                : spinIntensity.value === 'normal'
+                  ? 4 * 360
+                  : 5 * 360
+
+        const finalRotation = Math.max(totalRotation, minRotations)
+
+        const normalizedCurrentDeg = ((currDeg.value % 360) + 360) % 360
+        const newDeg = normalizedCurrentDeg + finalRotation
+
+        console.log(
+            `${spinIntensity.value} spin: ${finalRotation.toFixed(0)}° over ${spinTimeInSeconds}s`,
+        )
+
+        spinWheel.value.style.transform = `rotate(${newDeg}deg)`
+        currDeg.value = newDeg
 
         setTimeout(() => {
             if (animationFrame.value) {
                 cancelAnimationFrame(animationFrame.value)
             }
 
-            // Find the winning slice based on the final angle
-            const normalizedDeg = randDeg % 360
-            // Find which slice contains the 12 o'clock position (0 deg)
+            const normalizedDeg = newDeg % 360
             const winning = spinnerMovieSegments.value.findIndex(
                 (entry) =>
                     (360 - normalizedDeg) % 360 >= entry.sliceStartAngle &&
@@ -246,16 +270,19 @@ export const useSpinnerWheel = async () => {
         currDeg,
         watchedMovies,
         isSpinning,
-        people,
         moviesByPerson,
         numPeople,
+        people,
         allMovies: spinnerMovieSegments,
-        colours,
         burstConfetti,
         spin,
         getSliceFilter,
         getSliceTransform,
         hoveredIndex,
+        getPersonColour,
+        getPersonLabelX,
+        getPersonLabelY,
+        getPersonLabelRotation,
         selectSlice,
     }
 }
