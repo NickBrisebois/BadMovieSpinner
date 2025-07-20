@@ -192,7 +192,7 @@
                     </div>
                 </div>
                 <div v-else :class="$style.selectedMovieInfo">
-                    <h2 :class="$style.sectionTitle">Spin the Wheel!</h2>
+                    <h2 :class="$style.sectionTitle">Spin to <del>Win</del> Lose</h2>
                     <p :class="$style.description">
                         Click the button to spin the wheel and get a random bad movie to watch :)
                     </p>

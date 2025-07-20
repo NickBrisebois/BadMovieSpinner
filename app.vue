@@ -21,11 +21,75 @@ import Spinner from './components/spinnerWheel.vue'
 <style>
 html,
 body {
-    background: radial-gradient(circle at 50% 30%, #232526 0%, #414345 100%);
-    min-height: 100vh;
     margin: 0;
-    font-family: 'Poppins', sans-serif;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
     color: #fff;
+    height: 100%;
+}
+body {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+
+    &::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+            radial-gradient(circle at 1px 1px, rgba(255, 0, 128, 0.3) 1px, transparent 0),
+            radial-gradient(circle at 21px 21px, rgba(0, 255, 255, 0.2) 1px, transparent 0);
+        background-size: 40px 40px;
+        background-position:
+            0 0,
+            20px 20px;
+        animation: dotMatrix 8s linear infinite;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    &::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: conic-gradient(
+            from 0deg at 50% 50%,
+            transparent 0deg,
+            rgba(169, 79, 202, 0.1) 45deg,
+            transparent 90deg,
+            rgba(255, 107, 157, 0.1) 135deg,
+            transparent 180deg,
+            rgba(0, 255, 255, 0.1) 225deg,
+            transparent 270deg,
+            rgba(255, 0, 128, 0.1) 315deg,
+            transparent 360deg
+        );
+        animation: conicSpin 30s linear infinite;
+        pointer-events: none;
+        z-index: -2;
+    }
+}
+
+@keyframes dotMatrix {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(40px, 40px);
+    }
+}
+
+@keyframes conicSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 header {
