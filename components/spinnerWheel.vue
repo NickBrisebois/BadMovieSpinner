@@ -157,7 +157,7 @@
                         <a
                             :href="allMovies[selectedIndex].movie.link"
                             target="_blank"
-                            :class="$style.watchButton"
+                            :class="$style.tmdbLinkButton"
                         >
                             🎬 TMDb Details
                         </a>
