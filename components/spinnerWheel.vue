@@ -103,12 +103,13 @@
                         </foreignObject>
                     </g>
                 </svg>
-            </div>
-            <div :class="$style.spinActivator">
-                <button :class="$style.spinButton" id="spin" @click="spin">
-                    <span :class="$style.back"></span>
-                    <span :class="$style.front"></span>
-                </button>
+
+                <div :class="$style.spinActivator">
+                    <button :class="$style.spinButton" id="spin" @click="spin">
+                        <span :class="$style.back"></span>
+                        <span :class="$style.front"></span>
+                    </button>
+                </div>
             </div>
         </div>
         <div :class="$style.metadata">

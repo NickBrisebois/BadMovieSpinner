@@ -68,7 +68,7 @@ export const useSpinnerWheel = async () => {
     watch(selectedIndex, (newIndex, oldIndex) => {
         if (isSpinning.value && newIndex !== oldIndex && newIndex !== null) {
             if ('vibrate' in navigator) {
-                navigator.vibrate(10)
+                navigator.vibrate(50)
             }
         }
     })
@@ -84,7 +84,12 @@ export const useSpinnerWheel = async () => {
         '/assets/images/confetti6.png',
     ]
 
-    const spinningAudio = ['/assets/mp3/spinning/spin.mp3', '/assets/mp3/spinning/spin2.mp3']
+    const spinningAudio = [
+        '/assets/mp3/spinning/spin.mp3',
+        '/assets/mp3/spinning/spin2.mp3',
+        '/assets/mp3/spinning/spin3.mp3',
+        '/assets/mp3/spinning/spin4.mp3',
+    ]
 
     const selectedAudio = [
         '/assets/mp3/selected/selected.mp3',
@@ -92,6 +97,7 @@ export const useSpinnerWheel = async () => {
         '/assets/mp3/selected/selected3.mp3',
         '/assets/mp3/selected/selected4.mp3',
         '/assets/mp3/selected/selected5.mp3',
+        '/assets/mp3/selected/selected6.mp3',
     ]
 
     async function burstConfetti() {
