@@ -49,14 +49,14 @@ function getTextY(startAngle: number, endAngle: number, size: number) {
 }
 
 const personColours = [
-    '#a94fca', // Purple
-    '#ff6b9d', // Pink
-    '#4ecdc4', // Teal
-    '#45b7d1', // Blue
-    '#f9ca24', // Yellow
-    '#f0932b', // Orange
-    '#eb4d4b', // Red
-    '#6c5ce7', // Violet
+    '#ff0080', // Hot Pink
+    '#00ff80', // Bright Green
+    '#8000ff', // Electric Purple
+    '#ff8000', // Bright Orange
+    '#0080ff', // Electric Blue
+    '#ffff00', // Bright Yellow
+    '#ff4040', // Neon Red
+    '#00ffff', // Lime Green
 ]
 
 function getPersonColour(personName: string, people: string[]): string {

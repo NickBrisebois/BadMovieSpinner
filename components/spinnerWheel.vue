@@ -199,7 +199,7 @@
                 </div>
             </div>
             <div :class="[$style.personLegend, $style.section]">
-                <h3>Movie Suggesters</h3>
+                <h3>Slop Dispensers</h3>
                 <div :class="$style.legendItems">
                     <div v-for="(person, index) in people" :key="person" :class="$style.legendItem">
                         <div
