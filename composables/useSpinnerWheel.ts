@@ -11,6 +11,7 @@ export const useSpinnerWheel = async () => {
     const spinWheel = ref<SVGSVGElement | null>(null)
     const currDeg = ref(0)
     const isSpinning = ref(false)
+    const hoveredIndex = ref<number | null>(null)
 
     const badMoviesFetch = await useFetch('/api/sheets', {
         method: 'GET',
@@ -72,6 +73,7 @@ export const useSpinnerWheel = async () => {
         '/assets/images/confetti3.png',
         '/assets/images/confetti4.png',
         '/assets/images/confetti5.png',
+        '/assets/images/confetti6.png',
     ]
 
     async function burstConfetti() {
@@ -141,6 +143,31 @@ export const useSpinnerWheel = async () => {
         }, spinTime)
     }
 
+    function getSliceFilter(index: number): string {
+        if (selectedIndex.value == index) {
+            return 'brightness(1.4) saturate(1.3) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
+        } else if (hoveredIndex.value === index) {
+            return 'brightness(1.2) saturate(1.2) drop-shadow(0 0 4px rgba(255, 255, 255, 0.3))'
+        }
+
+        return 'brightness(1)'
+    }
+
+    function getSliceTransform(index: number): string {
+        if (selectedIndex.value === index) {
+            return 'scale(1.05)'
+        } else if (hoveredIndex.value === index) {
+            return 'scale(1.015)'
+        }
+        return 'scale(1)'
+    }
+
+    function selectSlice(index: number) {
+        selectedIndex.value = index
+
+        console.log('Selected slice:', spinnerMovieSegments.value[index])
+    }
+
     return {
         size,
         spinTime,
@@ -157,5 +184,9 @@ export const useSpinnerWheel = async () => {
         colours,
         burstConfetti,
         spin,
+        getSliceFilter,
+        getSliceTransform,
+        hoveredIndex,
+        selectSlice,
     }
 }

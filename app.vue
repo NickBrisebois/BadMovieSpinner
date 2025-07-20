@@ -47,6 +47,7 @@ header h1 {
         0 1px 0 #333;
     margin: 0;
     padding: 0;
+    text-align: center;
 }
 
 main {

@@ -1,7 +1,7 @@
 <template>
     <div :class="$style.moviesContainer">
-        <div :class="$style.wheelContainer">
-            <div :class="[$style.spinner, { [$style.isSpinning]: isSpinning }]" ref="spinContainer">
+        <div :class="[$style.wheelContainer, { [$style.isSpinning]: isSpinning }]">
+            <div :class="$style.spinner" ref="spinContainer">
                 <svg
                     :class="$style.winningIndicator"
                     :width="40"
@@ -23,16 +23,6 @@
                         opacity="0.85"
                     />
                 </svg>
-                <div :class="$style.spinnerLever">
-                    <button
-                        :class="$style.spinnerLeverButton"
-                        id="spin"
-                        type="button"
-                        @click="spin"
-                    >
-                        Pull the lever to spin the wheel
-                    </button>
-                </div>
                 <svg
                     ref="spinWheel"
                     :class="$style.spinnerSVG"
@@ -77,8 +67,22 @@
                                     ? `url(#poster-pattern-${i})`
                                     : colours[i % colours.length]
                             "
-                            stroke="#232526"
-                            stroke-width="2"
+                            stroke="rgba(255, 255, 255, 0.2)"
+                            stroke-width="1.5"
+                            :style="{
+                                transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                                filter: getSliceFilter(i),
+                                transform: getSliceTransform(i),
+                                transformOrigin: 'center',
+                                cursor: 'pointer',
+                                '--slice-shadow':
+                                    hoveredIndex === i
+                                        ? '0 0 15px rgba(255,255,255,0.4)'
+                                        : '0 0 5px rgba(0,0,0,0.2)',
+                            }"
+                            @mouseenter="hoveredIndex = i"
+                            @mouseleave="hoveredIndex = null"
+                            @click="selectSlice(i)"
                         />
                         <foreignObject
                             :x="getTextX(entry.sliceStartAngle, entry.sliceEndAngle, size) - 40"
@@ -86,25 +90,10 @@
                             width="80"
                             height="40"
                         >
-                            <div
-                                style="
-                                    color: #fff;
-                                    font-size: 12px;
-                                    text-align: center;
-                                    overflow: hidden;
-                                    text-overflow: ellipsis;
-                                    width: 80px;
-                                    height: 40px;
-                                    line-height: 1.1;
-                                    word-break: break-word;
-                                    background: rgba(0, 0, 0, 0.5);
-                                    border-radius: 6px;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                "
-                            >
-                                {{ entry.movie.title }}
+                            <div :class="$style.movieLabel">
+                                <a :href="entry.movie.link" target="_blank">{{
+                                    entry.movie.title
+                                }}</a>
                             </div>
                         </foreignObject>
                     </g>
@@ -127,6 +116,12 @@
                         />
                     </g>
                 </svg>
+            </div>
+            <div :class="$style.spinActivator">
+                <button :class="$style.spinButton" id="spin" @click="spin">
+                    <span :class="$style.back"></span>
+                    <span :class="$style.front"></span>
+                </button>
             </div>
         </div>
         <div :class="$style.metadata">
@@ -203,6 +198,10 @@ const {
     allMovies,
     colours,
     spin,
+    getSliceFilter,
+    getSliceTransform,
+    hoveredIndex,
+    selectSlice,
 } = await useSpinnerWheel()
 </script>
 
