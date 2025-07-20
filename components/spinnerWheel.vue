@@ -90,30 +90,17 @@
                             width="80"
                             height="40"
                         >
-                            <div :class="$style.movieLabel">
+                            <div
+                                :class="[
+                                    $style.movieLabel,
+                                    { [$style.selectedMovie]: selectedIndex === i },
+                                ]"
+                            >
                                 <a :href="entry.movie.link" target="_blank">{{
                                     entry.movie.title
                                 }}</a>
                             </div>
                         </foreignObject>
-                    </g>
-                    <!-- Highlight the selected slice on top -->
-                    <g v-if="selectedIndex !== null">
-                        <path
-                            :d="
-                                describeArc(
-                                    size / 2,
-                                    size / 2,
-                                    size / 2 - 4,
-                                    allMovies[selectedIndex]?.sliceStartAngle ?? 0,
-                                    allMovies[selectedIndex]?.sliceEndAngle ?? 0,
-                                )
-                            "
-                            fill="none"
-                            stroke="red"
-                            stroke-width="6"
-                            style="pointer-events: none"
-                        />
                     </g>
                 </svg>
             </div>

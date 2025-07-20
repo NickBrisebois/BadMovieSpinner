@@ -10,6 +10,7 @@ export const useSpinnerWheel = async () => {
     const spinContainer = ref<HTMLElement | null>(null)
     const spinWheel = ref<SVGSVGElement | null>(null)
     const currDeg = ref(0)
+    const animationFrame = ref<number | null>(null)
     const isSpinning = ref(false)
     const hoveredIndex = ref<number | null>(null)
 
@@ -117,10 +118,44 @@ export const useSpinnerWheel = async () => {
         }
     }
 
+    function getCurrentSliceIndex(rotation: number): number {
+        const normalizedDeg = (360 - (rotation % 360)) % 360
+        const sliceIndex = spinnerMovieSegments.value.findIndex(
+            (entry) =>
+                normalizedDeg >= entry.sliceStartAngle && normalizedDeg < entry.sliceEndAngle,
+        )
+        return sliceIndex >= 0 ? sliceIndex : 0
+    }
+
+    function trackRotation() {
+        if (!spinWheel.value || !isSpinning.value) return
+
+        const transform = getComputedStyle(spinWheel.value).transform
+        if (transform && transform !== 'none') {
+            // Extract rotation from transform matrix
+            const matrix = new DOMMatrix(transform)
+            const rotation = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI)
+            currDeg.value = rotation
+
+            // Update selected index based on current rotation
+            const currentSlice = getCurrentSliceIndex(rotation)
+            if (currentSlice !== selectedIndex.value) {
+                selectedIndex.value = currentSlice
+            }
+        }
+
+        // Continue tracking if still spinning
+        if (isSpinning.value) {
+            animationFrame.value = requestAnimationFrame(trackRotation)
+        }
+    }
+
     function spin() {
         if (!spinContainer.value || !spinWheel.value) return
 
         isSpinning.value = true
+
+        trackRotation()
 
         const startingDeg = currDeg.value
         const randDeg = startingDeg + Math.round(Math.random() * (3000 - 360) + 360)
@@ -128,6 +163,10 @@ export const useSpinnerWheel = async () => {
         currDeg.value = randDeg
 
         setTimeout(() => {
+            if (animationFrame.value) {
+                cancelAnimationFrame(animationFrame.value)
+            }
+
             // Find the winning slice based on the final angle
             const normalizedDeg = randDeg % 360
             // Find which slice contains the 12 o'clock position (0 deg)
@@ -144,29 +183,30 @@ export const useSpinnerWheel = async () => {
     }
 
     function getSliceFilter(index: number): string {
-        if (selectedIndex.value == index) {
-            return 'brightness(1.4) saturate(1.3) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
+        if (selectedIndex.value === index) {
+            return 'brightness(1.5) saturate(1.4) contrast(1.1) drop-shadow(0 0 12px rgba(169, 79, 202, 0.8))'
         } else if (hoveredIndex.value === index) {
-            return 'brightness(1.2) saturate(1.2) drop-shadow(0 0 4px rgba(255, 255, 255, 0.3))'
+            return 'brightness(1.3) saturate(1.2) contrast(1.05) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
         }
-
-        return 'brightness(1)'
+        return 'brightness(1) saturate(1) contrast(1)'
     }
 
     function getSliceTransform(index: number): string {
-        if (selectedIndex.value === index) {
-            return 'scale(1.05)'
-        } else if (hoveredIndex.value === index) {
-            return 'scale(1.015)'
-        }
-        return 'scale(1)'
+        return 'scale(1) translateZ(0)'
     }
 
     function selectSlice(index: number) {
         selectedIndex.value = index
-
-        console.log('Selected slice:', spinnerMovieSegments.value[index])
     }
+
+    onUnmounted(() => {
+        if (animationFrame.value) {
+            cancelAnimationFrame(animationFrame.value)
+        }
+        isSpinning.value = false
+        selectedIndex.value = null
+        hoveredIndex.value = null
+    })
 
     return {
         size,

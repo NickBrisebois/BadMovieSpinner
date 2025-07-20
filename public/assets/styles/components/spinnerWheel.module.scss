@@ -74,6 +74,16 @@
             transition: all 0.3s ease;
         }
 
+        .selectedMovie {
+            background: linear-gradient(
+                135deg,
+                rgba(254, 13, 13, 0.8) 0%,
+                rgba(255, 0, 0, 0.932) 100%
+            );
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+        }
+
         .spinButton {
             --primary: 255, 90, 120;
             --secondary: 150, 50, 60;
