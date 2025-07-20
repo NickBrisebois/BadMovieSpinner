@@ -105,8 +105,11 @@
                 </svg>
 
                 <div :class="$style.spinActivator">
-                    <button :class="$style.spinButton" id="spin" @click="spin">
-                        <span :class="$style.back"></span>
+                    <button
+                        :class="[$style.spinButton, { [$style.loading]: isSpinning }]"
+                        id="spin"
+                        @click="spin"
+                    >
                         <span :class="$style.front"></span>
                     </button>
                 </div>

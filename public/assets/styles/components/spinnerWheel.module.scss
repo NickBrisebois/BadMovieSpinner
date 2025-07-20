@@ -150,14 +150,10 @@
                 .front {
                     background: linear-gradient(
                         135deg,
-                        rgba(255, 215, 0, 0.9) 0%,
-                        rgba(255, 165, 0, 0.8) 100%
+                        rgb(255, 0, 0) 0%,
+                        rgba(255, 30, 0, 0.8) 100%
                     );
                 }
-            }
-
-            .back {
-                display: none;
             }
 
             .front {
@@ -196,7 +192,7 @@
                 }
 
                 &::after {
-                    content: 'THE WHEEL';
+                    content: 'FOR MOVIE';
                     font-size: 0.4rem;
                     opacity: 0.8;
                     letter-spacing: 0.5px;
@@ -210,11 +206,9 @@
 
             &.loading .front {
                 &::before {
-                    content: '';
+                    content: '!!!';
                     width: 20px;
                     height: 20px;
-                    border: 2px solid rgba(255, 255, 255, 0.3);
-                    border-top: 2px solid #fff;
                     border-radius: 50%;
                     animation: loadingSpin 1s linear infinite;
                     margin: 0;
