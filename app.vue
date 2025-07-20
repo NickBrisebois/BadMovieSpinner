@@ -52,10 +52,10 @@ body {
     &::after {
         content: '';
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
         background: conic-gradient(
             from 0deg at 50% 50%,
             transparent 0deg,
@@ -74,29 +74,56 @@ body {
     }
 }
 
-@keyframes dotMatrix {
-    0% {
-        transform: translate(0, 0);
-    }
-    100% {
-        transform: translate(40px, 40px);
-    }
-}
-
-@keyframes conicSpin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
 header {
-    background: linear-gradient(90deg, #db7093 0%, #4169e1 100%);
+    background: linear-gradient(90deg, rgba(219, 112, 147, 0.8) 0%, rgba(65, 105, 225, 0.8) 100%);
+    backdrop-filter: blur(20px) brightness(1.1);
+    -webkit-backdrop-filter: blur(20px) brightness(1.1);
     padding: 2em 0 1em 0;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+    box-shadow:
+        0 2px 16px rgba(0, 0, 0, 0.15),
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     width: 100vw;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            transparent 100%
+        );
+        transform: skewX(-20deg);
+        animation: glassShine 3s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .wrapper {
+        position: relative;
+        z-index: 2;
+    }
+}
+
+@keyframes glassShine {
+    0% {
+        left: -100%;
+    }
+    50% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
 }
 
 header h1 {
@@ -133,6 +160,24 @@ main {
     }
     main {
         padding: 1em 0;
+    }
+}
+
+@keyframes dotMatrix {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(40px, 40px);
+    }
+}
+
+@keyframes conicSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
     }
 }
 </style>
