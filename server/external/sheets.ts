@@ -24,15 +24,21 @@ export class BadMovieGSheet {
     private async parseMoviesFromRows(rows: any[]): Promise<BadMovie[]> {
         rows = rows.filter((row) => row.get('Title') && row.get('Link'))
         const parsedMoviesPromises = rows.map(async (row) => {
+            const tmdbID = this.extractTMDbIdFromURL(row.get('Link') || '')
+            if (!tmdbID) {
+                console.warn(`Invalid TMDb ID for movie: ${row.get('Title')}`)
+                return
+            }
             return {
                 title: row.get('Title'),
                 link: row.get('Link'),
                 watched: row.get('Watched') === 'TRUE',
                 suggestedBy: row.get('Suggested By'),
-                posterURL: (await this.getTMDbPosterURL(row.get('Link') || '')) || null,
+                posterURL: (await this.getTMDbPosterURL(tmdbID)) || null,
+                description: (await this.getTMDbMovieDetails(tmdbID))?.overview || '',
             } as BadMovie
         })
-        return Promise.all(parsedMoviesPromises)
+        return (await Promise.all(parsedMoviesPromises)).filter((movie) => !!movie)
     }
 
     private sortMoviesBySuggestedBy(movies: BadMovie[]): Map<string, BadMovie[]> {
@@ -80,16 +86,26 @@ export class BadMovieGSheet {
         } as GetMoviesResponse
     }
 
-    async getTMDbPosterURL(tmdbURL: string): Promise<string | null> {
-        const tmdbId = tmdbURL.split('/').pop()
-        if (!tmdbId) return null
+    extractTMDbIdFromURL(tmdbURL: string): string | null {
+        return tmdbURL.split('/').pop() || null
+    }
 
+    async getTMDbPosterURL(tmdbID: string): Promise<string | null> {
         const response = await fetch(
-            `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=en-US`,
+            `https://api.themoviedb.org/3/movie/${tmdbID}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=en-US`,
         )
         if (!response.ok) return null
 
         const data = await response.json()
         return data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : null
+    }
+
+    async getTMDbMovieDetails(tmdbID: string): Promise<null> {
+        const response = await fetch(
+            `https://api.themoviedb.org/3/movie/${tmdbID}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=en-US`,
+        )
+        if (!response.ok) return null
+
+        return await response.json()
     }
 }

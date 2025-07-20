@@ -118,15 +118,50 @@
         <div :class="$style.metadata">
             <div :class="$style.section">
                 <div v-if="selectedIndex !== null" :class="$style.selectedMovieInfo">
-                    <h2 :class="$style.selectedMovieTitle">
-                        {{ allMovies[selectedIndex].movie.title }}
-                    </h2>
-                    <p :class="$style.selectedMovieDescription">
-                        Suggested by: {{ allMovies[selectedIndex].movie.suggestedBy }}
-                    </p>
-                    <p v-if="allMovies[selectedIndex].movie.year" :class="$style.selectedMovieYear">
-                        Year: {{ allMovies[selectedIndex].movie.year }}
-                    </p>
+                    <div :class="$style.selectedMovieHeader">
+                        <div :class="$style.selectedMoviePoster">
+                            <img
+                                v-if="allMovies[selectedIndex].movie.posterURL"
+                                :src="allMovies[selectedIndex].movie.posterURL"
+                                :alt="allMovies[selectedIndex].movie.title"
+                            />
+                            <div v-else :class="$style.noPoster">No Poster</div>
+                        </div>
+                        <div :class="$style.selectedMovieDetails">
+                            <h2 :class="$style.selectedMovieTitle">
+                                {{ allMovies[selectedIndex].movie.title }}
+                            </h2>
+                            <p
+                                v-if="allMovies[selectedIndex].movie.year"
+                                :class="$style.selectedMovieYear"
+                            >
+                                {{ allMovies[selectedIndex].movie.year }}
+                            </p>
+                            <p :class="$style.selectedMovieSuggestedBy">
+                                Suggested by: {{ allMovies[selectedIndex].movie.suggestedBy }}
+                            </p>
+                        </div>
+                    </div>
+                    <div :class="$style.selectedMovieDescription">
+                        <p>
+                            {{
+                                allMovies[selectedIndex].movie.description ||
+                                'No description available.'
+                            }}
+                        </p>
+                    </div>
+                    <div
+                        v-if="allMovies[selectedIndex].movie.link"
+                        :class="$style.selectedMovieActions"
+                    >
+                        <a
+                            :href="allMovies[selectedIndex].movie.link"
+                            target="_blank"
+                            :class="$style.watchButton"
+                        >
+                            🎬 TMDb Details
+                        </a>
+                    </div>
                 </div>
                 <div v-else :class="$style.selectedMovieInfo">
                     <h2 :class="$style.sectionTitle">Spin the Wheel!</h2>

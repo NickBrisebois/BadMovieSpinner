@@ -343,10 +343,126 @@
         .selectedMovieInfo {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            gap: 1em;
+            margin: 1em 0;
+        }
+
+        .selectedMovieHeader {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .selectedMoviePoster {
+            flex-shrink: 0;
+            width: 100px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(169, 79, 202, 0.3);
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+            }
+
+            &:hover img {
+                transform: scale(1.05);
+            }
+
+            .noPoster {
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #333, #555);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #999;
+                font-size: 0.8em;
+                text-align: center;
+            }
+        }
+
+        .selectedMovieDetails {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .selectedMovieTitle {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .selectedMovieYear {
+            font-size: 0.9em;
+            color: #a94fca;
+            font-weight: 600;
+            margin: 0;
+            padding: 0.25rem 0.5rem;
+            background: rgba(169, 79, 202, 0.2);
+            border-radius: 15px;
+            width: fit-content;
+            border: 1px solid rgba(169, 79, 202, 0.3);
+        }
+
+        .selectedMovieSuggestedBy {
+            font-size: 0.8em;
+            color: #ccc;
+            margin: 0;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .selectedMovieDescription {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid #a94fca;
+
+            p {
+                margin: 0;
+                line-height: 1.5;
+                color: #e0e0e0;
+                font-size: 0.9em;
+            }
+        }
+
+        .selectedMovieActions {
+            display: flex;
             justify-content: center;
-            text-align: center;
-            margin-bottom: 1em;
+            margin-top: 0.5rem;
+        }
+
+        .watchButton {
+            background: linear-gradient(135deg, #a94fca 0%, #ff6b9d 100%);
+            color: #fff;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(169, 79, 202, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(169, 79, 202, 0.6);
+                background: linear-gradient(135deg, #b85dd9 0%, #ff7ba8 100%);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
         }
 
         .section {

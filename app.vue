@@ -11,7 +11,10 @@ import Spinner from './components/spinnerWheel.vue'
 
     <main>
         <NuxtRouteAnnouncer />
-        <Spinner />
+
+        <div class="wrapper">
+            <Spinner />
+        </div>
     </main>
 </template>
 
@@ -29,12 +32,7 @@ header {
     background: linear-gradient(90deg, #db7093 0%, #4169e1 100%);
     padding: 2em 0 1em 0;
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
-}
-
-header .wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100vw;
 }
 
 header h1 {
@@ -57,6 +55,12 @@ main {
     justify-content: flex-start;
     min-height: 80vh;
     padding: 2em 0;
+}
+
+.wrapper {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 @media (max-width: 700px) {

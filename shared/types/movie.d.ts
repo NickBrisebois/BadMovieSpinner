@@ -4,6 +4,7 @@ export interface BadMovie {
     watched: boolean
     suggestedBy: string
     posterURL: string
+    description?: string
 }
 
 export interface GetMoviesResponse {
