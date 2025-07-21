@@ -56,7 +56,19 @@ const personColours = [
     '#0080ff', // Electric Blue
     '#ffff00', // Bright Yellow
     '#ff4040', // Neon Red
-    '#00ffff', // Lime Green
+    '#00ffff', // Cyan/Aqua
+    '#ff80ff', // Bright Magenta
+    '#80ff00', // Chartreuse
+    '#ff0040', // Deep Pink
+    '#4080ff', // Sky Blue
+    '#ff8040', // Coral
+    '#8040ff', // Blue Purple
+    '#40ff80', // Spring Green
+    '#ffff80', // Light Yellow
+    '#ff4000', // Red Orange
+    '#0040ff', // Pure Blue
+    '#80ff80', // Light Green
+    '#ff00ff', // Pure Magenta
 ]
 
 function getPersonColour(personName: string, people: string[]): string {
@@ -64,29 +76,4 @@ function getPersonColour(personName: string, people: string[]): string {
     return personColours[personIndex % personColours.length]
 }
 
-function getPersonLabelX(personIndex: number, size: number, people: string[]): number {
-    const angle = ((personIndex + 0.5) * (360 / people.length) * Math.PI) / 180
-    return size / 2 + (size / 2 + 20) * Math.cos(angle)
-}
-
-function getPersonLabelY(personIndex: number, size: number, people: string[]): number {
-    const angle = ((personIndex + 0.5) * (360 / people.length) * Math.PI) / 180
-    return size / 2 + (size / 2 + 20) * Math.sin(angle)
-}
-
-function getPersonLabelRotation(personIndex: number, people: string[]): number {
-    const angle = (personIndex + 0.5) * (360 / people.length)
-    return angle > 90 && angle < 270 ? angle + 180 : angle
-}
-
-export {
-    getMovieAngles,
-    describeArc,
-    getTextX,
-    getTextY,
-    getPersonColour,
-    getPersonLabelX,
-    getPersonLabelY,
-    getPersonLabelRotation,
-    polarToCartesian,
-}
+export { getMovieAngles, describeArc, getTextX, getTextY, getPersonColour, polarToCartesian }

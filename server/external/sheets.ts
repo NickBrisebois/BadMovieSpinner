@@ -69,7 +69,7 @@ export class BadMovieGSheet {
     async getMovies(oneMoviePerPerson: boolean): Promise<GetMoviesResponse> {
         await this.googleDoc.sheetsByIndex[0].loadHeaderRow(5)
         const rows = await this.googleDoc.sheetsByIndex[0].getRows({
-            offset: 5,
+            offset: 0,
         })
         const parsedMovies = await this.parseMoviesFromRows(rows)
         const moviesByPerson = this.sortMoviesBySuggestedBy(parsedMovies)
