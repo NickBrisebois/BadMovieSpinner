@@ -280,9 +280,6 @@ export const useSpinnerWheel = async () => {
         getSliceTransform,
         hoveredIndex,
         getPersonColour,
-        getPersonLabelX,
-        getPersonLabelY,
-        getPersonLabelRotation,
         selectSlice,
     }
 }
