@@ -2,7 +2,11 @@ import { confetti } from '@tsparticles/confetti'
 import { ref, computed } from 'vue'
 import type { BadMovie } from '~/shared/types/movie'
 
-export const useSpinnerWheel = async () => {
+export const useSpinnerWheel = async (
+    confettiImages: string[],
+    spinSounds: string[],
+    selectedSounds: string[],
+) => {
     const size = 400
     const spinTime = 10000
 
@@ -74,31 +78,6 @@ export const useSpinnerWheel = async () => {
             }
         }
     })
-
-    const confettiImages = [
-        '/assets/images/confetti.png',
-        '/assets/images/confetti2.png',
-        '/assets/images/confetti3.png',
-        '/assets/images/confetti4.png',
-        '/assets/images/confetti5.png',
-        '/assets/images/confetti6.png',
-    ]
-
-    const spinningAudio = [
-        '/assets/mp3/spinning/spin.mp3',
-        '/assets/mp3/spinning/spin2.mp3',
-        '/assets/mp3/spinning/spin3.mp3',
-        '/assets/mp3/spinning/spin4.mp3',
-    ]
-
-    const selectedAudio = [
-        '/assets/mp3/selected/selected.mp3',
-        '/assets/mp3/selected/selected2.mp3',
-        '/assets/mp3/selected/selected3.mp3',
-        '/assets/mp3/selected/selected4.mp3',
-        '/assets/mp3/selected/selected5.mp3',
-        '/assets/mp3/selected/selected6.mp3',
-    ]
 
     async function burstConfetti() {
         const spinnerElement = spinContainer.value
@@ -179,9 +158,7 @@ export const useSpinnerWheel = async () => {
 
         isSpinning.value = true
 
-        const chosenAudio = new Audio(
-            spinningAudio[Math.floor(Math.random() * spinningAudio.length)],
-        )
+        const chosenAudio = new Audio(spinSounds[Math.floor(Math.random() * spinSounds.length)])
         chosenAudio.play()
 
         trackRotation()
@@ -236,7 +213,7 @@ export const useSpinnerWheel = async () => {
             chosenAudio.pause()
 
             const selectedAudioClip = new Audio(
-                selectedAudio[Math.floor(Math.random() * selectedAudio.length)],
+                selectedSounds[Math.floor(Math.random() * selectedSounds.length)],
             )
             selectedAudioClip.play()
         }, spinTime)

@@ -271,6 +271,11 @@
 </template>
 
 <script lang="ts" setup>
+const { confettiImages, selectedAudio, spinningAudio } = await $fetch('/api/assets', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+}).then((res) => res)
+
 const {
     size,
     spinTime,
@@ -288,7 +293,7 @@ const {
     hoveredIndex,
     selectSlice,
     people,
-} = await useSpinnerWheel()
+} = await useSpinnerWheel(confettiImages, spinningAudio, selectedAudio)
 </script>
 
 <style lang="scss" module src="~/public/assets/styles/components/spinnerWheel.module.scss"></style>
