@@ -9,14 +9,14 @@ COPY . .
 
 RUN npm run build
 
-# ---- End image ----
 FROM node:22-alpine
 
 WORKDIR /app
 
 COPY --from=build /app/.output ./
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package*.json ./
+
+# mount this directory to host
+RUN mkdir -p ./public
 
 EXPOSE 3000
 
