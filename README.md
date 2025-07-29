@@ -4,6 +4,8 @@ A bad movie spinner made for bad movie nights with my friends.
 
 Movies in the spinner are loaded from a Google sheets file
 
+https://badmovie.acid1.xyz/
+
 ### Images/Audio
 
 Place images for the confetti in ~/public/assets/images/confetti

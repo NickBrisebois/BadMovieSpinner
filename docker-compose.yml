@@ -5,6 +5,9 @@ services:
         build: .
         ports:
             - '3000:3000'
+        volumes:
+            - ./public/assets/mp3:/app/public/mp3:ro
+            - ./public/assets/images:/app/public/images:ro
         environment:
             - NODE_ENV=production
         env_file:
